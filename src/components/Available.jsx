@@ -11,7 +11,7 @@ const Available = ({ showModal, setShowModal, foodMenuID, setReload }) => {
         const fetchAdmin = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/admin/${id}`
+                    `https://santafetaguktukan.online/api/admin/${id}`
                 );
                 const data = await response.json();
                 setAdmin(data);
@@ -33,7 +33,7 @@ const Available = ({ showModal, setShowModal, foodMenuID, setReload }) => {
             };
             try {
                 const response = await fetch(
-                    `http://localhost:7722/availability/`,
+                    `https://santafetaguktukan.online/api/availability/`,
                     {
                         method: "POST",
                         headers: {

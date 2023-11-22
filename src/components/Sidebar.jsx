@@ -77,7 +77,7 @@ const Sidebar = () => {
         const fetchAdmin = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/admin/${id}`
+                    `https://santafetaguktukan.online/api/admin/${id}`
                 );
                 const data = await response.json();
                 setAdmin(data);

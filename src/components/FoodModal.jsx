@@ -41,7 +41,7 @@ const FoodModal = ({ showModal, setShowModal, selectedFood, foodPrices }) => {
             });
 
             if (confirmed.isConfirmed) {
-                const response = await fetch("http://localhost:7722/cart/add", {
+                const response = await fetch("https://santafetaguktukan.online/api/cart/add", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -82,7 +82,7 @@ const FoodModal = ({ showModal, setShowModal, selectedFood, foodPrices }) => {
         const getFoodPrices = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/food/price`,
+                    `https://santafetaguktukan.online/api/food/price`,
                     {
                         method: "GET",
                         headers: {

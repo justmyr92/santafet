@@ -203,7 +203,7 @@ const Registration = () => {
             };
 
             const customerResponse = await fetch(
-                "http://localhost:7722/customer/register",
+                "https://santafetaguktukan.online/api/customer/register",
                 {
                     method: "POST",
                     headers: {
@@ -232,7 +232,7 @@ const Registration = () => {
             };
 
             const addressResponse = await fetch(
-                "http://localhost:7722/address/add",
+                "https://santafetaguktukan.online/api/address/add",
                 {
                     method: "POST",
                     headers: {

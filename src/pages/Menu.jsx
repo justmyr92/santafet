@@ -54,7 +54,7 @@ const Menu = () => {
         const fetchMostOrdered = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/order/most/${customerID}`
+                    `https://santafetaguktukan.online/api/order/most/${customerID}`
                 );
                 const data = await response.json();
                 setMostOrdered(data);
@@ -72,7 +72,7 @@ const Menu = () => {
             try {
                 if (filterKeyword === "All") {
                     const responseFood = await fetch(
-                        "http://localhost:7722/food"
+                        "https://santafetaguktukan.online/api/food"
                     );
                     dataFood = await responseFood.json();
                     setFoods(dataFood);
@@ -82,13 +82,13 @@ const Menu = () => {
                 ) {
                     console.log(filterKeyword);
                     const responseFood = await fetch(
-                        "http://localhost:7722/food/" + filterKeyword
+                        "https://santafetaguktukan.online/api/food/" + filterKeyword
                     );
                     dataFood = await responseFood.json();
                     setFoods(dataFood);
                 } else {
                     const responseFood = await fetch(
-                        "http://localhost:7722/food/favorite/" + customerID
+                        "https://santafetaguktukan.online/api/food/favorite/" + customerID
                     );
                     const dataFood = await responseFood.json();
                     console.log(dataFood);
@@ -96,18 +96,18 @@ const Menu = () => {
                 }
 
                 const responseFoodPrice = await fetch(
-                    "http://localhost:7722/food/price"
+                    "https://santafetaguktukan.online/api/food/price"
                 );
                 const dataFoodPrice = await responseFoodPrice.json();
 
                 const responseRider = await fetch(
-                    "http://localhost:7722/rider"
+                    "https://santafetaguktukan.online/api/rider"
                 );
                 const dataRider = await responseRider.json();
                 setRider(dataRider);
 
                 const responseBranchLocation = await fetch(
-                    "http://localhost:7722/branch"
+                    "https://santafetaguktukan.online/api/branch"
                 );
                 const dataBranchLocation = await responseBranchLocation.json();
                 setBranchLocation(dataBranchLocation);
@@ -119,14 +119,14 @@ const Menu = () => {
 
                 if (localStorage.getItem("userID") !== null) {
                     const responseCart = await fetch(
-                        "http://localhost:7722/cart/" +
+                        "https://santafetaguktukan.online/api/cart/" +
                             localStorage.getItem("userID")
                     );
                     const dataCart = await responseCart.json();
                     setCart(dataCart);
 
                     const responseAddresses = await fetch(
-                        "http://localhost:7722/address/" + customerID
+                        "https://santafetaguktukan.online/api/address/" + customerID
                     );
                     const dataAddresses = await responseAddresses.json();
                     setAddress(dataAddresses);
@@ -151,7 +151,7 @@ const Menu = () => {
     const deleteFromCart = async (cartID) => {
         try {
             const response = await fetch(
-                "http://localhost:7722/cart/delete/" + cartID,
+                "https://santafetaguktukan.online/api/cart/delete/" + cartID,
                 {
                     method: "DELETE",
                 }
@@ -252,7 +252,7 @@ const Menu = () => {
         };
         console.log(order);
         try {
-            const response = await fetch("http://localhost:7722/order/add", {
+            const response = await fetch("https://santafetaguktukan.online/api/order/add", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -282,7 +282,7 @@ const Menu = () => {
                     console.log(orderItem);
                     try {
                         const response = await fetch(
-                            "http://localhost:7722/order/item/add",
+                            "https://santafetaguktukan.online/api/order/item/add",
                             {
                                 method: "POST",
                                 headers: {
@@ -304,7 +304,7 @@ const Menu = () => {
 
                 try {
                     const responseDeleteCart = await fetch(
-                        "http://localhost:7722/customer/cart/delete/" +
+                        "https://santafetaguktukan.online/api/customer/cart/delete/" +
                             customerID,
                         {
                             method: "DELETE",

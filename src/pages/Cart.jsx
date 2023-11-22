@@ -39,7 +39,7 @@ const Cart = () => {
         const getCart = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/cart/${customerID}`
+                    `https://santafetaguktukan.online/api/cart/${customerID}`
                 );
                 const jsonData = await response.json();
                 setCart(jsonData);
@@ -51,7 +51,7 @@ const Cart = () => {
 
         const getFoods = async () => {
             try {
-                const response = await fetch("http://localhost:7722/food");
+                const response = await fetch("https://santafetaguktukan.online/api/food");
                 const jsonData = await response.json();
                 setFoods(jsonData);
             } catch (err) {
@@ -76,7 +76,7 @@ const Cart = () => {
         const getFoodPrices = async () => {
             try {
                 const response = await fetch(
-                    "http://localhost:7722/food/price"
+                    "https://santafetaguktukan.online/api/food/price"
                 );
                 const jsonData = await response.json();
                 setFoodPrices(jsonData);
@@ -95,7 +95,7 @@ const Cart = () => {
     const deleteCart = async (id) => {
         try {
             const deleteCart = await fetch(
-                `http://localhost:7722/cart/delete/${id}`,
+                `https://santafetaguktukan.online/api/cart/delete/${id}`,
                 {
                     method: "DELETE",
                 }
@@ -110,7 +110,7 @@ const Cart = () => {
     const updateQuantity = async (id, quantity) => {
         try {
             const response = await fetch(
-                `http://localhost:7722/cart/update/${id}`,
+                `https://santafetaguktukan.online/api/cart/update/${id}`,
                 {
                     method: "PATCH",
                     headers: {

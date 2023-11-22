@@ -30,7 +30,7 @@ const Login = () => {
             };
 
             const customerResponse = await fetch(
-                "http://localhost:7722/customer/login",
+                "https://santafetaguktukan.online/api/customer/login",
                 {
                     method: "POST",
                     headers: {
@@ -62,7 +62,7 @@ const Login = () => {
                 };
 
                 const adminResponse = await fetch(
-                    "http://localhost:7722/admin/login",
+                    "https://santafetaguktukan.online/api/admin/login",
                     {
                         method: "POST",
                         headers: {
@@ -95,7 +95,7 @@ const Login = () => {
                     };
 
                     const superadminResponse = await fetch(
-                        "http://localhost:7722/superadmin/login",
+                        "https://santafetaguktukan.online/api/superadmin/login",
                         {
                             method: "POST",
                             headers: {

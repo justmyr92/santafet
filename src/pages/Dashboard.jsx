@@ -48,7 +48,7 @@ const Dashboard = () => {
         const fetchAdmin = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/admin/${id}`
+                    `https://santafetaguktukan.online/api/admin/${id}`
                 );
                 const data = await response.json();
                 setAdmin(data);
@@ -64,7 +64,7 @@ const Dashboard = () => {
         const getCustomerCount = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/customer/count/`
+                    `https://santafetaguktukan.online/api/customer/count/`
                 );
                 const jsonData = await response.json();
                 setCustomerCount(jsonData.count);
@@ -77,7 +77,7 @@ const Dashboard = () => {
         const getOrderCount = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/order/count/${admin.branchid}`
+                    `https://santafetaguktukan.online/api/order/count/${admin.branchid}`
                 );
 
                 const jsonData = await response.json();
@@ -92,7 +92,7 @@ const Dashboard = () => {
         const getProductCount = async () => {
             try {
                 const response = await fetch(
-                    "http://localhost:7722/product/count"
+                    "https://santafetaguktukan.online/api/product/count"
                 );
 
                 const jsonData = await response.json();
@@ -107,7 +107,7 @@ const Dashboard = () => {
         const getSaleCount = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/order/success/${admin.branchid}`
+                    `https://santafetaguktukan.online/api/order/success/${admin.branchid}`
                 );
 
                 const jsonData = await response.json();

@@ -26,7 +26,7 @@ const Branch = () => {
 
     useEffect(() => {
         const branchFetch = async () => {
-            const response = await fetch(`http://localhost:7722/branch`);
+            const response = await fetch(`https://santafetaguktukan.online/api/branch`);
             const data = await response.json();
             setBranch(data);
         };
@@ -88,7 +88,7 @@ const Branch = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch("http://localhost:7722/branch", {
+            const response = await fetch("https://santafetaguktukan.online/api/branch", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

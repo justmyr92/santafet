@@ -28,7 +28,7 @@ const Users = () => {
     useEffect(() => {
         const fetchAdmins = async () => {
             try {
-                const response = await fetch("http://localhost:7722/admin");
+                const response = await fetch("https://santafetaguktukan.online/api/admin");
                 const data = await response.json();
                 setAdmins(data);
             } catch (error) {
@@ -38,7 +38,7 @@ const Users = () => {
 
         const fetchBranches = async () => {
             try {
-                const response = await fetch("http://localhost:7722/branch");
+                const response = await fetch("https://santafetaguktukan.online/api/branch");
                 const data = await response.json();
                 setBranches(data);
             } catch (error) {
@@ -88,7 +88,7 @@ const Users = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch("http://localhost:7722/admins", {
+            const response = await fetch("https://santafetaguktukan.online/api/admins", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

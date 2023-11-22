@@ -9,7 +9,7 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
         const getOrderList = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/order/item/${selectedOrder.customerorderid}`,
+                    `https://santafetaguktukan.online/api/order/item/${selectedOrder.customerorderid}`,
                     {
                         method: "GET",
                         headers: {
@@ -61,7 +61,7 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
             if (result.isConfirmed) {
                 try {
                     const response = await fetch(
-                        `http://localhost:7722/order/process/${selectedOrder.customerorderid}`,
+                        `https://santafetaguktukan.online/api/order/process/${selectedOrder.customerorderid}`,
                         {
                             method: "PATCH",
                             headers: {
