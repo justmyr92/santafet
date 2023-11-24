@@ -1109,6 +1109,23 @@ app.post("/availability", async (req, res) => {
     }
 });
 
+app.get("/transaction_sum/:month", async (req, res) => {
+    try {
+        const year = new Date().getFullYear();
+        const { month } = req.params;
+        const result = await pool.query(
+            "SELECT SUM(customerordertotalprice) FROM customerordertable WHERE EXTRACT(MONTH FROM customerorderdate) = $1 AND EXTRACT(YEAR FROM customerorderdate) = $2",
+
+            [month, year]
+        );
+
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
 app.listen(7722, () => {
     console.log("Server has started on port 7722");
 });

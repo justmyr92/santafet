@@ -60,6 +60,31 @@ const Dashboard = () => {
         fetchAdmin();
     }, [id]); // Added id as a dependency
 
+    // Extract months and profits for chart
+
+    const [monthlyProfits, setMonthlyProfits] = useState({});
+    const months = Object.keys(monthlyProfits);
+    const profitss = Object.values(monthlyProfits);
+    const chartData = {
+        labels: months,
+        datasets: [
+            {
+                label: "Monthly Profits for 2023",
+                data: profitss,
+                backgroundColor: "rgba(75,192,192,0.2)",
+                borderColor: "rgba(75,192,192,1)",
+                borderWidth: 1,
+            },
+        ],
+    };
+
+    const chartOptions = {
+        scales: {
+            y: {
+                beginAtZero: true,
+            },
+        },
+    };
     useEffect(() => {
         const getCustomerCount = async () => {
             try {
@@ -117,6 +142,62 @@ const Dashboard = () => {
             }
         };
         getSaleCount();
+        const fetchMonthlyProfit = async (month) => {
+            try {
+                const response = await fetch(
+                    `http://localhost:7722/transaction_sum/${month}`
+                );
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch profits for ${month}`);
+                }
+
+                const data = await response.json();
+                console.log(data.sum, "sum");
+                return data.sum;
+            } catch (error) {
+                console.error(`Error fetching profits for ${month}:`, error);
+                return 0; // Return 0 in case of an error
+            }
+        };
+
+        const updateMonthlyProfits = async () => {
+            const months = [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10",
+                "11",
+                "12",
+            ];
+            const updatedProfits = {};
+
+            try {
+                // Use Promise.all to fetch profits for all months concurrently
+                const profits = await Promise.all(
+                    months.map(async (month) => await fetchMonthlyProfit(month))
+                );
+
+                // Update the monthlyProfits object
+                months.forEach((month, index) => {
+                    //to number
+                    updatedProfits[month] = parseInt(profits[index]);
+                });
+            } catch (error) {
+                console.error("Error updating monthly profits:", error);
+            } finally {
+                setLoadingProfits(false);
+                setMonthlyProfits(updatedProfits);
+            }
+        };
+
+        updateMonthlyProfits();
     }, [admin.branchid]); // Added admin.branchid as a dependency
 
     const labels = [
@@ -189,7 +270,7 @@ const Dashboard = () => {
                     </div>
                     <div className="mt-4 grid grid-cols-2 gap-4">
                         <div className="graph-container">
-                            <Bar data={data} />
+                            <Bar data={chartData} options={chartOptions} />
                         </div>
                     </div>
                 </div>
