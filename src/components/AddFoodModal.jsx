@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
     const [foodName, setFoodName] = useState("");
     const [foodMenuDescription, setFoodMenuDescription] = useState("");
-    const [foodMenuCategory, setFoodMenuCategory] = useState("");
+    const [foodMenuCategory, setFoodMenuCategory] = useState("Chicken");
     const [foodMenuImage, setFoodMenuImage] = useState(
         "../src/assets/foods/im.jpg"
     );
@@ -246,22 +246,43 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
                             </button>
                         </div>
                         <div className="p-6 space-y-6 overflow-y-auto h-96">
-                            <input
-                                type="text"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none"
-                                name="foodName"
-                                placeholder="Food Name"
-                                onChange={(e) => setFoodName(e.target.value)}
-                            />
-                            <textarea
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none"
-                                name="foodMenuDescription"
-                                placeholder="Food Description"
-                                onChange={(e) =>
-                                    setFoodMenuDescription(e.target.value)
-                                }
-                            ></textarea>
-                            <input
+                            <div className="input-group">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Food Name
+                                </label>
+                                <input
+                                    type="text"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none"
+                                    name="foodName"
+                                    placeholder="Food Name"
+                                    onChange={(e) =>
+                                        setFoodName(e.target.value)
+                                    }
+                                />
+                            </div>
+                            <div className="input-group">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Food Description
+                                </label>
+                                <textarea
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none"
+                                    name="foodMenuDescription"
+                                    placeholder="Food Description"
+                                    onChange={(e) =>
+                                        setFoodMenuDescription(e.target.value)
+                                    }
+                                ></textarea>
+                            </div>
+                            <div className="input-group">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Food Category
+                                </label>
+                                <select className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none">
+                                    <option value="Chicken">Chicken</option>
+                                    <option value="Pork">Pork</option>
+                                </select>
+                            </div>
+                            {/* <input
                                 type="text"
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none"
                                 name="foodMenuCategory"
@@ -269,16 +290,21 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
                                 onChange={(e) =>
                                     setFoodMenuCategory(e.target.value)
                                 }
-                            />
-                            <input
-                                type="file"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none"
-                                name="foodMenuImage"
-                                placeholder="Food Image"
-                                onChange={(e) =>
-                                    setFoodMenuImage(e.target.files[0])
-                                }
-                            />
+                            /> */}
+                            <div className="input-group">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Food Image
+                                </label>
+                                <input
+                                    type="file"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none"
+                                    name="foodMenuImage"
+                                    placeholder="Food Image"
+                                    onChange={(e) =>
+                                        setFoodMenuImage(e.target.files[0])
+                                    }
+                                />
+                            </div>
                             <div className="grid grid-cols-1 gap-4">
                                 {menuPrices.map((price, index) => (
                                     <div

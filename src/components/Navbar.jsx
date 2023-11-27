@@ -163,14 +163,14 @@ const Navbar = () => {
                                 >
                                     About
                                 </a>
-                                <a
+                                <Link
                                     href="/#contact"
                                     className={
                                         "text-white hover:bg-yellow-400 hover:text-white rounded-md px-3 py-2 text-sm font-medium transition duration-100 ease-in-out"
                                     }
                                 >
                                     Contact
-                                </a>
+                                </Link>
                             </div>
                         </div>
                     </div>

@@ -1,291 +1,695 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+    faCartShopping,
+    faMapMarked,
+    faTrash,
+} from "@fortawesome/free-solid-svg-icons";
+import Swal from "sweetalert2";
+import { Link } from "react-router-dom";
 
 const Cart = () => {
-    const customerID = localStorage.getItem("userID");
+    const [checkedProducts, setCheckedProducts] = useState([]);
+    const [checkedTotal, setCheckedTotal] = useState(0);
+    const [totalItems, setTotalItems] = useState(0);
+    const [cartDetails, setCartDetails] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [address, setAddress] = useState({});
+    const [deliveryFee, setDeliveryFee] = useState(50);
+    const [branch, setBranch] = useState([]);
+    const [orderMethod, setOrderMethod] = useState("Delivery");
+    const [selectedBranch, setSelectedBranch] = useState("");
 
-    const [cart, setCart] = useState([]);
+    const ID = localStorage.getItem("userID");
 
-    const [foods, setFoods] = useState([]);
-    const [foodPrices, setFoodPrices] = useState([]);
-    const [updatedQuantity, setUpdatedQuantity] = useState({});
-    const [checkedItems, setCheckedItems] = useState([]);
-
-    useEffect(() => {
-        if (localStorage.getItem("userID") === null) {
-            //if the user is not logged in, redirect to login page
-            window.location.href = "/login";
-        } else {
-            if (localStorage.getItem("userRoleID") !== "CUS") {
-                //if the user is not a customer, redirect to login page
-                window.location.href = "/";
-            }
-        }
-    }, []);
-
-    const handleCheckboxChange = (id) => {
-        const isChecked = checkedItems.includes(id);
-
-        if (isChecked) {
-            // If already checked, remove from the list
-            setCheckedItems(checkedItems.filter((item) => item !== id));
-        } else {
-            // If not checked, add to the list
-            setCheckedItems([...checkedItems, id]);
-        }
-    };
-
-    useEffect(() => {
-        const getCart = async () => {
-            try {
-                const response = await fetch(
-                    `http://localhost:7722/cart/${customerID}`
-                );
-                const jsonData = await response.json();
-                setCart(jsonData);
-            } catch (err) {
-                console.error(err.message);
-            }
-        };
-        getCart();
-
-        const getFoods = async () => {
-            try {
-                const response = await fetch("http://localhost:7722/food");
-                const jsonData = await response.json();
-                setFoods(jsonData);
-            } catch (err) {
-                console.error(err.message);
-            }
-        };
-        getFoods();
-
-        // app.get("/food/price/:id", async (req, res) => {
-        //     try {
-        //         const { id } = req.params;
-        //         const allFoodPrice = await pool.query(
-        //             "SELECT * FROM foodMenuPriceTable WHERE foodMenuID = 1",
-        //             [id]
-        //         );
-        //         res.json(allFoodPrice.rows);
-        //     } catch (err) {
-        //         console.error(err.message);
-        //     }
-        // });
-
-        const getFoodPrices = async () => {
-            try {
-                const response = await fetch(
-                    "http://localhost:7722/food/price"
-                );
-                const jsonData = await response.json();
-                setFoodPrices(jsonData);
-            } catch (err) {
-                console.error(err.message);
-            }
-        };
-
-        getFoodPrices();
-
-        console.log(cart);
-        console.log(foods);
-        console.log(foodPrices);
-    }, []);
-
-    const deleteCart = async (id) => {
-        try {
-            const deleteCart = await fetch(
-                `http://localhost:7722/cart/delete/${id}`,
-                {
-                    method: "DELETE",
-                }
-            );
-
-            setCart(cart.filter((cart) => cart.cartid !== id));
-        } catch (err) {
-            console.error(err.message);
-        }
-    };
-
-    const updateQuantity = async (id, quantity) => {
+    const getCartDetails = async () => {
+        setLoading(true);
         try {
             const response = await fetch(
-                `http://localhost:7722/cart/update/${id}`,
+                `http://localhost:7722/cart/inner/${ID}`,
                 {
-                    method: "PATCH",
+                    method: "GET",
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({ quantity }),
                 }
             );
+            const cartDetailsJSON = await response.json();
+            setCartDetails(cartDetailsJSON);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-            if (response.ok) {
-                console.log(`Quantity updated for cart item {id}`);
-            } else {
-                console.error(`Failed to update quantity for cart item {id}`);
+    const deleteCart = async (cartID) => {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!",
+            showCancelButton: true,
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(
+                        `http://localhost:7722/cart/delete/item/${cartID}`,
+                        {
+                            method: "DELETE",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                        }
+                    );
+                    const deleteCartJSON = await response.json();
+
+                    if (deleteCartJSON.ok) {
+                        Swal.fire(
+                            "Deleted!",
+                            "Your cart item has been deleted.",
+                            "success"
+                        );
+                        getCartDetails();
+                    } else {
+                        console.error("Failed to delete cart item.");
+                    }
+                } catch (error) {
+                    console.error("Error deleting cart item:", error);
+                }
             }
-        } catch (err) {
-            console.error(err.message);
+        });
+    };
+
+    const getTotals = () => {
+        let total = 0;
+        let totalItems = 0;
+        cartDetails.forEach((cartDetail) => {
+            if (checkedProducts.includes(cartDetail.cartid)) {
+                total += cartDetail.foodmenuprice * cartDetail.quantity;
+                totalItems += cartDetail.quantity;
+            }
+        });
+        setCheckedTotal(total);
+        setTotalItems(totalItems);
+    };
+
+    const handleCheckboxChange = (e, cartID) => {
+        e.preventDefault();
+        if (checkedProducts.includes(cartID)) {
+            setCheckedProducts((prevCheckedProducts) =>
+                prevCheckedProducts.filter((id) => id !== cartID)
+            );
+        } else {
+            setCheckedProducts((prevCheckedProducts) => [
+                ...prevCheckedProducts,
+                cartID,
+            ]);
         }
     };
 
-    const handleQuantityChange = (id, quantityChange) => {
-        const currentQuantity = updatedQuantity[id] || 0;
-        const newQuantity = currentQuantity + quantityChange;
+    const getAddresses = async () => {
+        try {
+            const response = await fetch(
+                `http://localhost:7722/address/${ID}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+            const addressJSON = await response.json();
+            setAddress(addressJSON[0]);
+            console.log(addressJSON);
+        } catch (error) {
+            console.error("Error getting address:", error);
+        }
+    };
 
-        // Check if the new quantity is greater than or equal to 0
-        if (newQuantity >= 1) {
-            // Update quantity in the state
-            setUpdatedQuantity({
-                ...updatedQuantity,
-                [id]: newQuantity,
+    const getBranches = async () => {
+        try {
+            const response = await fetch(`http://localhost:7722/branch`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
             });
-
-            // Trigger immediate update to the database
-            updateQuantity(id, newQuantity);
+            const branchJSON = await response.json();
+            setBranch(branchJSON);
+            console.log(branchJSON);
+        } catch (error) {
+            console.error("Error getting branch:", error);
         }
     };
 
+    const placeOrder = async () => {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, place order!",
+            showCancelButton: true,
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const customerorderid =
+                        Math.floor(Math.random() * 999999) + 100000;
+                    const response = await fetch(
+                        `http://localhost:7722/order/add`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                //custoemrorderid is math random from 100000, 999999
+                                customerorderid: customerorderid,
+                                customerid: ID,
+                                customeraddressid: address.customeraddressid,
+                                customerorderdate: new Date(),
+                                customerorderstatus: "Pending",
+                                customerordertotalprice: checkedTotal,
+                                customerorderpaymentmethod: "Cash on Delivery",
+                                customerorderpaymentstatus: "Pending",
+                                deliverypersonid: selectedBranch,
+                                estimated_delivery_time: "",
+                                order_method: orderMethod,
+                            }),
+                        }
+                    );
+                    const orderJSON = await response.json();
+                    if (response.ok) {
+                        cartDetails.forEach(async (cartDetail) => {
+                            if (checkedProducts.includes(cartDetail.cartid)) {
+                                try {
+                                    const response = await fetch(
+                                        `http://localhost:7722/order/item/add`,
+                                        {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type":
+                                                    "application/json",
+                                            },
+                                            body: JSON.stringify({
+                                                customerorderitemid:
+                                                    Math.floor(
+                                                        Math.random() * 999999
+                                                    ) + 100000,
+                                                customerorderid:
+                                                    customerorderid,
+                                                foodmenuid:
+                                                    cartDetail.foodmenuid,
+                                                foodmenupriceid:
+                                                    cartDetail.foodmenupriceid,
+                                                customerorderitemquantity:
+                                                    cartDetail.quantity,
+                                                customerorderitemtotalprice:
+                                                    cartDetail.foodmenuprice *
+                                                    cartDetail.quantity,
+                                            }),
+                                        }
+                                    );
+                                    const orderItemJSON = await response.json();
+                                    if (response.ok) {
+                                        try {
+                                            const response = await fetch(
+                                                `http://localhost:7722/cart/delete/item/${cartDetail.cartid}`,
+                                                {
+                                                    method: "DELETE",
+                                                    headers: {
+                                                        "Content-Type":
+                                                            "application/json",
+                                                    },
+                                                }
+                                            );
+                                            const deleteCartJSON =
+                                                await response.json();
+                                        } catch (error) {
+                                            console.error(
+                                                "Error deleting cart item:",
+                                                error
+                                            );
+                                        }
+                                    } else {
+                                        console.error(
+                                            "Failed to place order item."
+                                        );
+                                    }
+                                } catch (error) {
+                                    console.error(
+                                        "Error placing order item:",
+                                        error
+                                    );
+                                }
+                            }
+                        });
+                    }
+
+                    Swal.fire({
+                        icon: "success",
+                        title: "Success!",
+                        text: "Order placed successfully.",
+                    }).then(() => {
+                        // After the alert is closed, navigate to another page
+                        window.location.href = "/menu";
+                    });
+
+                    console.log(orderJSON);
+                } catch (error) {
+                    console.error("Error placing order:", error);
+                }
+            }
+        });
+    };
+
+    useEffect(() => {
+        getCartDetails();
+        getAddresses();
+        getBranches();
+    }, []);
+
+    useEffect(() => {
+        getTotals();
+    }, [checkedProducts, cartDetails]);
+
+    const [page, setPage] = useState(1);
     return (
-        <>
+        <div>
             <Navbar />
 
-            <div className="container mx-auto my-8 p-8 bg-white shadow-lg">
-                <h2 className="text-3xl font-bold mb-4">Order Summary</h2>
+            {page === 1 && (
+                <div className="container mx-auto my-8 p-8 bg-white shadow-lg">
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-3xl font-bold mb-4">My Cart</h2>
+                        <button className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+                            Clear Cart
+                        </button>
+                    </div>
+                    <hr className="border border-yellow-300 my-4" />
 
-                <table className="w-full border-collapse border border-gray-300 mb-6">
-                    <thead>
-                        <tr>
-                            <th className="py-2 px-4 bg-gray-200">Product</th>
-                            <th className="py-2 px-4 bg-gray-200">Quantity</th>
-                            <th className="py-2 px-4 bg-gray-200">Price</th>
-                            <th className="py-2 px-4 bg-gray-200">Total</th>
-                        </tr>
-                    </thead>
-                    {/* <tbody>
-                        {cart
-                            .filter((cartItem) =>
-                                checkedItems.includes(cartItem.cartid)
-                            )
-                            .map((cartItem) => {
-                                // Find the corresponding food item using foodmenuid
-                                const foodItem = foods.find(
-                                    (food) =>
-                                        food.foodmenuid === cartItem.foodmenuid
-                                );
+                    <div className="grid grid-cols-12 gap-4 py-2">
+                        <div className="col-span-3 flex items-center justify-center"></div>
+                        <div className="col-span-3 flex items-center">
+                            <p className="font-bold text-lg">Product</p>
+                        </div>
+                        <div className="col-span-1 flex items-center">
+                            <p className="font-bold text-lg">Quantity</p>
+                        </div>
+                        <div className="col-span-2 flex items-center">
+                            <p className="font-bold text-lg">Price</p>
+                        </div>
+                        <div className="col-span-2 flex items-center">
+                            <p className="font-bold text-lg">Total</p>
+                        </div>
+                        <div className="col-span-1 flex items-center">
+                            <p className="font-bold text-lg">Remove</p>
+                        </div>
+                    </div>
+                    {loading ? (
+                        <p>Loading...</p>
+                    ) : (
+                        <>
+                            {cartDetails && cartDetails.length > 0 ? (
+                                cartDetails.map((cartDetail, index) => (
+                                    <div
+                                        className={`grid grid-cols-12 gap-4 py-2 hover:bg-gray-200 transition duration-150 ease-in-out ${
+                                            index % 2 === 0 ? "bg-gray-100" : ""
+                                        }`}
+                                        key={cartDetail.cartid}
+                                    >
+                                        <div className="col-span-1 flex items-center justify-center">
+                                            <input
+                                                type="checkbox"
+                                                className="mr-2 accent-red-500 form-checkbox h-5 w-5"
+                                                onChange={(e) =>
+                                                    handleCheckboxChange(
+                                                        e,
+                                                        cartDetail.cartid
+                                                    )
+                                                }
+                                                checked={checkedProducts.includes(
+                                                    cartDetail.cartid
+                                                )}
+                                            />
+                                        </div>
+                                        <div className="col-span-2 flex items-center">
+                                            <img
+                                                src={`../src/assets/foods/${cartDetail.foodmenuimage}`}
+                                                alt="product"
+                                                className="w-24 h-24 object-cover rounded"
+                                            />
+                                        </div>
+                                        <div className="col-span-3 flex flex-col justify-center">
+                                            <h3 className="font-bold text-lg">
+                                                {cartDetail.foodmenuname}
+                                            </h3>
+                                            <p className="text-sm text-gray-500">
+                                                {cartDetail.foodmenucuttype}
+                                            </p>
+                                        </div>
+                                        <div className="col-span-1 flex flex-col justify-center">
+                                            <input
+                                                type="number"
+                                                className="w-full border border-gray-300 px-3 py-2 rounded"
+                                                value={cartDetail.quantity}
+                                            />
+                                        </div>
+                                        <div className="col-span-2  flex flex-col justify-center">
+                                            <p className="text-lg">
+                                                {parseFloat(
+                                                    cartDetail.foodmenuprice
+                                                ).toFixed(2)}
+                                            </p>
+                                        </div>
+                                        <div className="col-span-2  flex flex-col justify-center">
+                                            <p className="text-lg">
+                                                {(
+                                                    cartDetail.foodmenuprice *
+                                                    cartDetail.quantity
+                                                ).toFixed(2)}
+                                            </p>
+                                        </div>
+                                        <div className="col-span-1  flex flex-col justify-center">
+                                            <button
+                                                onClick={() =>
+                                                    deleteCart(
+                                                        cartDetail.cartid
+                                                    )
+                                                }
+                                            >
+                                                <FontAwesomeIcon
+                                                    icon={faTrash}
+                                                    className="text-red-500"
+                                                />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="col-span-12 flex justify-center bg-gray-100 py-4 flex-col items-center">
+                                    <p className="text-center text-dark">
+                                        No items in cart
+                                    </p>
+                                    <Link to="/menu">
+                                        <button className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+                                            Shop Now
+                                        </button>
+                                    </Link>
+                                </div>
+                            )}
+                            <div className="grid grid-cols-12 gap-4 py-2">
+                                <div className="col-span-7"></div>
+                                <div className="col-span-2 flex flex-col justify-center">
+                                    <p className="font-bold text-lg">
+                                        Total{" "}
+                                        <span className="text-sm">
+                                            ({totalItems}) items
+                                        </span>
+                                    </p>
+                                </div>
+                                <div className="col-span-1 flex flex-col justify-center">
+                                    <p className="font-bold text-lg">
+                                        {checkedTotal.toFixed(2)}
+                                    </p>
+                                </div>
 
-                                // Find the corresponding food price using foodmenuid
-                                const foodPrice = foodPrices.find(
-                                    (price) =>
-                                        price.foodmenuid === cartItem.foodmenuid
-                                );
-
-                                return (
-                                    <tr key={cartItem.cartid}>
-                                        <td className="py-2 px-4">
-                                            {foodItem
-                                                ? foodItem.foodmenuname
-                                                : ""}
-                                        </td>
-                                        <td className="py-2 px-4">
-                                            {updatedQuantity[cartItem.cartid] ||
-                                                cartItem.quantity}
-                                        </td>
-                                        <td className="py-2 px-4">
-                                            {foodPrice
-                                                ? parseFloat(
-                                                      foodPrice.foodmenuprice
-                                                  ).toFixed(2)
-                                                : 0.0}
-                                        </td>
-                                        <td className="py-2 px-4">
-                                            {(updatedQuantity[
-                                                cartItem.cartid
-                                            ] || cartItem.quantity) *
-                                                (foodPrice
-                                                    ? parseFloat(
-                                                          foodPrice.foodmenuprice
-                                                      )
-                                                    : 0.0)}
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                    </tbody> */}
-                    <tbody>
-                        <tr>
-                            <td className="py-2 px-4">Lechon Manok</td>
-                            <td className="py-2 px-4">1</td>
-                            <td className="py-2 px-4">123.00</td>
-                            <td className="py-2 px-4">123.00</td>
-                        </tr>
-                        <tr>
-                            <td className="py-2 px-4">Fried Chicken</td>
-                            <td className="py-2 px-4">1</td>
-                            <td className="py-2 px-4">44.00</td>
-                            <td className="py-2 px-4">44.00</td>
-                        </tr>
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <th className="py-2 px-4" colSpan="3">
-                                Total
-                            </th>
-                            {/* <td className="py-2 px-4">
-                                {cart
-                                    .filter((cartItem) =>
-                                        checkedItems.includes(cartItem.cartid)
-                                    )
-                                    .reduce(
-                                        (total, cartItem) =>
-                                            total +
-                                            (updatedQuantity[cartItem.cartid] ||
-                                                cartItem.quantity) *
-                                                (foodPrices.find(
-                                                    (price) =>
-                                                        price.foodmenuid ===
-                                                        cartItem.foodmenuid
-                                                )
-                                                    ? parseFloat(
-                                                          foodPrices.find(
-                                                              (price) =>
-                                                                  price.foodmenuid ===
-                                                                  cartItem.foodmenuid
-                                                          ).foodmenuprice
-                                                      ).toFixed(2)
-                                                    : 0.0),
-                                        0
-                                    )}
-                            </td> */}
-
-                            <td className="py-2 px-4">167.00</td>
-                        </tr>
-                    </tfoot>
-                </table>
-                <div className="flex justify-between">
-                    <select className=" border border-gray-300 rounded py-2 px-4  border-dashboard">
-                        <option selected>
-                            Bauan Branch, Bauan, Batangas, Philippines
-                        </option>
-                        <option>
-                            Lipa Branch, Lipa, Batangas, Philippines
-                        </option>
-                        <option>
-                            Batangas City Branch, Batangas City, Batangas,
-                            Philippines
-                        </option>
-                    </select>
-
-                    <button
-                        type="submit"
-                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-blue-700"
-                    >
-                        Place Order
-                    </button>
+                                <div
+                                    className="col-span-2 flex flex-col justify-center"
+                                    onClick={() => setPage(2)}
+                                >
+                                    <button
+                                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                                        disabled={checkedProducts.length === 0}
+                                    >
+                                        Checkout
+                                    </button>
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
-            </div>
-        </>
+            )}
+
+            {page === 2 && (
+                <div className="container mx-auto my-8 p-8 bg-white shadow-lg">
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-3xl font-bold mb-4">
+                            Order Summary
+                        </h2>
+                        <button
+                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                            onClick={() => setPage(1)}
+                        >
+                            Back
+                        </button>
+                    </div>
+                    <hr className="border border-yellow-300 my-4" />
+                    <div className="grid grid-cols-12 py-2">
+                        <div className="col-span-5 flex items-center text-left pl-4">
+                            <p className="font-bold text-lg">Product</p>
+                        </div>
+                        <div className="col-span-2 flex items-center">
+                            <p className="font-bold text-lg">Type</p>
+                        </div>
+                        <div className="col-span-1 flex items-center">
+                            <p className="font-bold text-lg">Quantity</p>
+                        </div>
+                        <div className="col-span-2 flex items-center">
+                            <p className="font-bold text-lg">Price</p>
+                        </div>
+                        <div className="col-span-2 text-right pr-4">
+                            <p className="font-bold text-lg">Subtotal</p>
+                        </div>
+                    </div>
+                    <>
+                        {cartDetails &&
+                            cartDetails.length > 0 &&
+                            cartDetails.map(
+                                (cartDetail, index) =>
+                                    checkedProducts.includes(
+                                        cartDetail.cartid
+                                    ) && (
+                                        <div
+                                            className={`grid grid-cols-12 gap-4 py-2 hover:bg-gray-200 transition duration-150 ease-in-out ${
+                                                index % 2 === 0
+                                                    ? "bg-gray-100"
+                                                    : ""
+                                            }`}
+                                            key={cartDetail.cartid}
+                                        >
+                                            {/* productname and cut ype */}
+                                            <div className="col-span-5 flex flex-col justify-center pl-4">
+                                                <h3 className="font-bold text-lg">
+                                                    {cartDetail.foodmenuname}
+                                                </h3>
+                                                <p className="text-sm text-gray-500">
+                                                    {
+                                                        cartDetail.foodmenudescription
+                                                    }
+                                                </p>
+                                            </div>
+
+                                            {/* quantity */}
+                                            <div className="col-span-2 flex flex-col justify-center">
+                                                <p className="text-sm text-gray-500">
+                                                    {cartDetail.foodmenucuttype}
+                                                </p>
+                                            </div>
+
+                                            {/* price */}
+                                            <div className="col-span-1 flex flex-col justify-center">
+                                                <p className="text-sm">
+                                                    {parseFloat(
+                                                        cartDetail.foodmenuprice
+                                                    ).toFixed(2)}
+                                                </p>
+                                            </div>
+
+                                            {/* qua */}
+                                            <div className="col-span-2 flex flex-col justify-center">
+                                                <p className="text-sm">
+                                                    {cartDetail.quantity}
+                                                </p>
+                                            </div>
+
+                                            {/* total */}
+                                            <div className="col-span-2 flex flex-col justify-center text-right pr-4">
+                                                <p className="text-sm">
+                                                    {(
+                                                        cartDetail.foodmenuprice *
+                                                        cartDetail.quantity
+                                                    ).toFixed(2)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )
+                            )}
+                    </>
+
+                    <hr className="border border-yellow-300 my-4" />
+                    <div className="grid grid-cols-2 grid-rows-3">
+                        <div className="col-span-1">
+                            <div className="flex items-center text-left mb-4">
+                                <div className="flex items-start text-left flex-col w-full">
+                                    <p className="font-bold text-xl mb-2">
+                                        <FontAwesomeIcon
+                                            icon={faMapMarked}
+                                            className="mr-2"
+                                        />
+                                        Delivery Address
+                                    </p>
+                                    <div className="border border-gray-300 rounded p-4 w-full">
+                                        <div className="flex flex-col justify-center">
+                                            <p className="text-base font-bold">
+                                                {address.customerfullname}
+                                            </p>
+                                        </div>
+                                        <div className="flex flex-col justify-center gap-1">
+                                            <p className="text-sm text-gray-500">
+                                                {address.customerstreet},{" "}
+                                                {address.customerbarangay},{" "}
+                                                {address.customercity}
+                                            </p>
+                                            <p className="text-sm text-red-500">
+                                                {address.customercontactnumber}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex items-start text-left flex-col w-full mb-4">
+                                <p className="font-bold text-xl mb-2">
+                                    <FontAwesomeIcon
+                                        icon={faCartShopping}
+                                        className="mr-2"
+                                    />
+                                    Order Type
+                                </p>
+                                <div className="border border-gray-300 rounded p-4 w-full">
+                                    <div className="flex flex-col justify-center">
+                                        <select
+                                            className="border border-gray-300 rounded p-2 w-full"
+                                            onChange={(e) =>
+                                                setOrderMethod(e.target.value)
+                                            }
+                                        >
+                                            <option value="Delivery" selected>
+                                                Delivery
+                                            </option>
+                                            <option value="Pickup">
+                                                Pickup
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start text-left flex-col w-full">
+                                {/* branch */}
+                                <p className="font-bold text-xl mb-2">
+                                    <FontAwesomeIcon
+                                        icon={faCartShopping}
+                                        className="mr-2"
+                                    />
+                                    Branch
+                                </p>
+                                <div className="border border-gray-300 rounded p-4 w-full">
+                                    <div className="flex flex-col justify-center">
+                                        <select
+                                            className="border border-gray-300 rounded p-2 w-full"
+                                            onChange={(e) =>
+                                                setSelectedBranch(
+                                                    e.target.value
+                                                )
+                                            }
+                                            defaultValue={branch[4].branchid} // Set defaultValue here
+                                        >
+                                            {branch.map((branch, index) => (
+                                                <option
+                                                    key={branch.branchid}
+                                                    value={branch.branchid}
+                                                >
+                                                    {branch.branchname}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="col-span-1 px-4">
+                            <div className="flex items-start text-left flex-col w-full mb-4">
+                                <p className="font-bold text-xl mb-2">
+                                    <FontAwesomeIcon
+                                        icon={faCartShopping}
+                                        className="mr-2"
+                                    />
+                                    Order Details
+                                </p>
+                                <div className="border border-gray-300 rounded p-8 w-full flex flex-col gap-4">
+                                    <div className="flex flex-row justify-between">
+                                        <p className="text-base font-bold">
+                                            Total Items:
+                                        </p>
+                                        <p className="text-base font-bold text-right text-red-500">
+                                            {totalItems}
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-row justify-between">
+                                        <p className="text-base font-bold">
+                                            Subtotal:
+                                        </p>
+                                        <p className="text-base font-bold text-right text-red-500">
+                                            {checkedTotal.toFixed(2)}
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-row justify-between">
+                                        <p className="text-base font-bold">
+                                            Delivery Fee:
+                                        </p>
+                                        <p className="text-base font-bold text-right text-red-500">
+                                            {deliveryFee.toFixed(2)}
+                                        </p>
+                                    </div>
+                                    <hr className="border-1 border-gray-300" />
+                                    <div className="flex flex-row justify-between">
+                                        <p className="text-base font-bold">
+                                            Total Amount:
+                                        </p>
+                                        <p className="text-base font-bold text-right text-red-500">
+                                            {(
+                                                checkedTotal + deliveryFee
+                                            ).toFixed(2)}
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-row justify-between">
+                                        <p className="text-base font-bold">
+                                            Payment Method:
+                                        </p>
+                                        <p className="text-base font-bold text-right text-red-500">
+                                            Cash on Delivery
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-row justify-between">
+                                        <button
+                                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                                            onClick={placeOrder}
+                                        >
+                                            Place Order
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 };
 

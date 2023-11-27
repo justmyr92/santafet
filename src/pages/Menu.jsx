@@ -22,6 +22,13 @@ const Menu = () => {
     const [selectedAddress, setSelectedAddress] = useState({});
     const [address, setAddress] = useState([]);
     const [customerID, setCustomerID] = useState("");
+    const filterKeywords = [
+        "All",
+        "Chicken",
+        "Pork",
+        "Your Favorites",
+        "Best Seller",
+    ];
 
     const [filterKeyword, setFilterKeyword] = useState("All");
 
@@ -31,55 +38,22 @@ const Menu = () => {
 
     const [selectedBranch, setSelectedBranch] = useState("");
 
+    const [favoriteFoods, setFavoriteFoods] = useState([]);
+
     const [rider, setRider] = useState([]);
 
-    const [mostOrdered, setMostOrdered] = useState([]);
+    const [bestSeller, setBestSeller] = useState([]);
+
+    const [search, setSearch] = useState("");
 
     useEffect(() => {
         setCustomerID(localStorage.getItem("userID"));
-
-        // app.get("/order/most/:id", async (req, res) => {
-        //     try {
-        //         const { id } = req.params;
-        //         const mostOrder = await pool.query(
-        //             "SELECT foodMenuID, COUNT(*) FROM customerOrderItemTable WHERE customerID = $1 GROUP BY foodMenuID ORDER BY COUNT(*) DESC LIMIT 1",
-        //             [id]
-        //         );
-        //         res.json(mostOrder.rows);
-        //     } catch (err) {
-        //         console.error(err.message);
-        //     }
-        // });
-
-        const fetchMostOrdered = async () => {
-            try {
-                const response = await fetch(
-                    `http://localhost:7722/order/most/${customerID}`
-                );
-                const data = await response.json();
-                setMostOrdered(data);
-                console.log(data);
-            } catch (error) {
-                console.error(error);
-            }
-        };
-
-        fetchMostOrdered();
 
         const fetchData = async () => {
             let dataFood = []; // Declare dataFood here
 
             try {
-                if (filterKeyword === "All") {
-                    const responseFood = await fetch(
-                        "http://localhost:7722/food"
-                    );
-                    dataFood = await responseFood.json();
-                    setFoods(dataFood);
-                } else if (
-                    filterKeyword === "Chicken" ||
-                    filterKeyword === "Pork"
-                ) {
+                if (filterKeyword === "Chicken" || filterKeyword === "Pork") {
                     console.log(filterKeyword);
                     const responseFood = await fetch(
                         "http://localhost:7722/food/" + filterKeyword
@@ -88,12 +62,18 @@ const Menu = () => {
                     setFoods(dataFood);
                 } else {
                     const responseFood = await fetch(
-                        "http://localhost:7722/food/favorite/" + customerID
+                        "http://localhost:7722/food"
                     );
-                    const dataFood = await responseFood.json();
-                    console.log(dataFood);
+                    dataFood = await responseFood.json();
                     setFoods(dataFood);
                 }
+                // else if (filterKeyword === "Best Seller") {
+                //     const responseFood = await fetch(
+                //         "http://localhost:7722/order/best"
+                //     );
+                //     dataFood = await responseFood.json();
+                //     setBestSeller(dataFood);
+                // }
 
                 const responseFoodPrice = await fetch(
                     "http://localhost:7722/food/price"
@@ -139,6 +119,22 @@ const Menu = () => {
                     } else {
                         setSelectedAddress(dataAddresses[0]);
                     }
+
+                    const responseFavoriteFoods = await fetch(
+                        "http://localhost:7722/order/most/" + customerID
+                    );
+
+                    const dataFavoriteFoods =
+                        await responseFavoriteFoods.json();
+
+                    const responseBestSeller = await fetch(
+                        "http://localhost:7722/order/best"
+                    );
+                    const dataBestSeller = await responseBestSeller.json();
+                    setBestSeller(dataBestSeller);
+                    console.log(dataBestSeller);
+
+                    setFavoriteFoods(dataFavoriteFoods);
                 }
             } catch (error) {
                 console.error(error);
@@ -244,7 +240,7 @@ const Menu = () => {
                         item.quantity,
                 50
             ),
-            customerorderpaymentmethod: "Cash",
+            customerorderpaymentmethod: "Cash on Delivery",
             customerorderpaymentstatus: "Pending",
             deliverypersonid: selectedBranch,
             estimated_delivery_time: "",
@@ -393,189 +389,327 @@ const Menu = () => {
                             </div>
                             <div className="filter-container mt-4">
                                 <ul className="flex flex-row justify-start items-center space-x-2">
-                                    <li
-                                        className="px-2 py-1 text-sm font-medium text-gray-900 bg-gray-200 rounded-lg"
-                                        onClick={() => setFilterKeyword("All")}
-                                    >
-                                        All
-                                    </li>
-                                    <li
-                                        className="px-2 py-1 text-sm font-medium text-gray-900 bg-gray-200 rounded-lg"
-                                        onClick={() =>
-                                            setFilterKeyword("Chicken")
-                                        }
-                                    >
-                                        Chicken
-                                    </li>
-                                    <li
-                                        className="px-2 py-1 text-sm font-medium text-gray-900 bg-gray-200 rounded-lg"
-                                        onClick={() => setFilterKeyword("Pork")}
-                                    >
-                                        Pork
-                                    </li>
-                                    <li
-                                        className="px-2 py-1 text-sm font-medium text-gray-900 bg-gray-200 rounded-lg"
-                                        onClick={() =>
-                                            setFilterKeyword("Your Favorites")
-                                        }
-                                    >
-                                        Your Favorites
-                                    </li>
-                                    <li
-                                        className="px-2 py-1 text-sm font-medium text-gray-900 bg-gray-200 rounded-lg"
-                                        onClick={() =>
-                                            setFilterKeyword("Best Seller")
-                                        }
-                                    >
-                                        Best Seller
-                                    </li>
+                                    {filterKeywords.map((keyword) => (
+                                        <li
+                                            key={keyword}
+                                            className={`px-3 py-1 text-lg font-medium text-gray-900 rounded-lg hover:bg-gray-200 transition duration-150 ease-in-out cursor-pointer ${
+                                                filterKeyword === keyword
+                                                    ? "bg-gray-200"
+                                                    : ""
+                                            }`}
+                                            onClick={() =>
+                                                setFilterKeyword(keyword)
+                                            }
+                                        >
+                                            {keyword}
+                                        </li>
+                                    ))}
                                 </ul>
                             </div>
                             <hr className="my-2 border-b-1 border-gray-300" />
                             <div className="menu-container mt-4">
-                                <h3 className="text-lg font-medium text-gray-900">
-                                    Your Favorites
-                                </h3>
-                                <ul className="grid grid-cols-2 gap-4">
-                                    {filterKeyword !== "Chicken" &&
-                                    filterKeyword !== "Pork" &&
-                                    mostOrdered &&
-                                    foodPrices
-                                        ? mostOrdered.map((food) => (
-                                              <li
-                                                  key={food.foodmenuid}
-                                                  className="food-menu-item rounded-lg"
-                                                  data-modal-target="foodModal"
-                                                  data-modal-toggle="foodModal"
-                                                  onClick={() => {
-                                                      setSelectedFood(food);
-                                                      setFoodModal(true);
-                                                  }}
-                                              >
-                                                  <div className="food-menu-image-container h-[12rem]">
-                                                      <img
-                                                          src={`../src/assets/foods/${food.foodmenuimage}`}
-                                                          alt={
-                                                              food.foodmenuname
-                                                          }
-                                                          className="object-cover w-full h-full rounded-t-lg"
-                                                      />
-                                                  </div>
-                                                  <div className="food-menu-info-container p-4">
-                                                      <div className="food-menu-name-container">
-                                                          <h3 className="text-lg font-medium text-gray-900">
-                                                              {
-                                                                  food.foodmenuname
-                                                              }
-                                                          </h3>
-                                                      </div>
-                                                      <div className="food-menu-description-container">
-                                                          <p className="text-sm text-gray-500">
-                                                              {
-                                                                  food.foodmenudescription
-                                                              }
-                                                          </p>
-                                                      </div>
-                                                      <div className="food-menu-price-container">
-                                                          {foodPrices
-                                                              .filter(
-                                                                  (price) =>
-                                                                      price.foodmenuid ===
+                                {filterKeyword === "Your Favorites" ||
+                                filterKeyword === "All" ? (
+                                    <>
+                                        <h3 className="text-xl font-bold text-red-900">
+                                            Your Favorites
+                                        </h3>
+
+                                        <hr className="my-2 border-b-1 border-gray-300" />
+
+                                        <ul className="grid grid-cols-2 gap-4">
+                                            {/* map foods and for each foodmenuid in foodfavorites, display foodmenuid */}
+                                            {foods &&
+                                            foodPrices &&
+                                            favoriteFoods.length > 0
+                                                ? foods.map((food) => {
+                                                      const matchingFavorite =
+                                                          favoriteFoods.find(
+                                                              (favorite) =>
+                                                                  favorite.foodmenuid ===
+                                                                  food.foodmenuid
+                                                          );
+
+                                                      if (matchingFavorite) {
+                                                          return (
+                                                              <li
+                                                                  key={
                                                                       food.foodmenuid
-                                                              )
-                                                              .map((price) => (
-                                                                  <div
-                                                                      key={
-                                                                          price.foodmenupriceid
-                                                                      }
-                                                                  >
-                                                                      <p className="text-sm text-gray-500">
-                                                                          Php{" "}
-                                                                          {
-                                                                              price.foodmenuprice
-                                                                          }{" "}
-                                                                          /{" "}
-                                                                          {
-                                                                              price.foodmenucuttype
+                                                                  }
+                                                                  className="food-menu-item rounded-lg"
+                                                                  data-modal-target="foodModal"
+                                                                  data-modal-toggle="foodModal"
+                                                                  onClick={() => {
+                                                                      setSelectedFood(
+                                                                          food
+                                                                      );
+                                                                      setFoodModal(
+                                                                          true
+                                                                      );
+                                                                  }}
+                                                              >
+                                                                  <div className="food-menu-image-container h-[12rem]">
+                                                                      <img
+                                                                          src={`../src/assets/foods/${food.foodmenuimage}`}
+                                                                          alt={
+                                                                              food.foodmenuname
                                                                           }
-                                                                      </p>
+                                                                          className="object-cover w-full h-full rounded-t-lg"
+                                                                      />
                                                                   </div>
-                                                              ))}
-                                                      </div>
-                                                  </div>
-                                              </li>
-                                          ))
-                                        : null}
-                                </ul>
-                                <hr className="my-2 border-b-1 border-gray-300" />
-                                <ul className="grid grid-cols-2 gap-4">
-                                    {foods && foodPrices
-                                        ? foods.map((food) => (
-                                              <li
-                                                  key={food.foodmenuid}
-                                                  className="food-menu-item rounded-lg"
-                                                  data-modal-target="foodModal"
-                                                  data-modal-toggle="foodModal"
-                                                  onClick={() => {
-                                                      setSelectedFood(food);
-                                                      setFoodModal(true);
-                                                  }}
-                                              >
-                                                  <div className="food-menu-image-container h-[12rem]">
-                                                      <img
-                                                          src={`../src/assets/foods/${food.foodmenuimage}`}
-                                                          alt={
-                                                              food.foodmenuname
-                                                          }
-                                                          className="object-cover w-full h-full rounded-t-lg"
-                                                      />
-                                                  </div>
-                                                  <div className="food-menu-info-container p-4">
-                                                      <div className="food-menu-name-container">
-                                                          <h3 className="text-lg font-medium text-gray-900">
-                                                              {
-                                                                  food.foodmenuname
-                                                              }
-                                                          </h3>
-                                                      </div>
-                                                      <div className="food-menu-description-container">
-                                                          <p className="text-sm text-gray-500">
-                                                              {
-                                                                  food.foodmenudescription
-                                                              }
-                                                          </p>
-                                                      </div>
-                                                      <div className="food-menu-price-container">
-                                                          {foodPrices
-                                                              .filter(
-                                                                  (price) =>
-                                                                      price.foodmenuid ===
+                                                                  <div className="food-menu-info-container p-4">
+                                                                      <div className="food-menu-name-container">
+                                                                          <h3 className="text-lg font-medium text-gray-900">
+                                                                              {
+                                                                                  food.foodmenuname
+                                                                              }
+                                                                          </h3>
+                                                                      </div>
+                                                                      <div className="food-menu-description-container">
+                                                                          <p className="text-sm text-gray-500">
+                                                                              {
+                                                                                  food.foodmenudescription
+                                                                              }
+                                                                          </p>
+                                                                      </div>
+                                                                      <div className="food-menu-price-container">
+                                                                          {foodPrices
+                                                                              .filter(
+                                                                                  (
+                                                                                      price
+                                                                                  ) =>
+                                                                                      price.foodmenuid ===
+                                                                                      food.foodmenuid
+                                                                              )
+                                                                              .map(
+                                                                                  (
+                                                                                      price
+                                                                                  ) => (
+                                                                                      <div
+                                                                                          key={
+                                                                                              price.foodmenupriceid
+                                                                                          }
+                                                                                      >
+                                                                                          <p className="text-sm text-gray-500">
+                                                                                              Php{" "}
+                                                                                              {
+                                                                                                  price.foodmenuprice
+                                                                                              }{" "}
+                                                                                              /{" "}
+                                                                                              {
+                                                                                                  price.foodmenucuttype
+                                                                                              }
+                                                                                          </p>
+                                                                                      </div>
+                                                                                  )
+                                                                              )}
+                                                                      </div>
+                                                                  </div>
+                                                              </li>
+                                                          );
+                                                      } else {
+                                                          return null;
+                                                      }
+                                                  })
+                                                : null}
+                                        </ul>
+                                    </>
+                                ) : null}
+                                {filterKeyword === "Best Seller" ||
+                                filterKeyword === "All" ? (
+                                    <>
+                                        <h3 className="text-xl font-bold text-red-900">
+                                            Best Seller
+                                        </h3>
+
+                                        <hr className="my-2 border-b-1 border-gray-300" />
+
+                                        <ul className="grid grid-cols-2 gap-4">
+                                            {/* map foods and for each foodmenuid in foodfavorites, display foodmenuid */}
+                                            {foods &&
+                                            foodPrices &&
+                                            bestSeller.length > 0
+                                                ? foods.map((food) => {
+                                                      const bestSellers =
+                                                          bestSeller.find(
+                                                              (bestseller) =>
+                                                                  bestseller.foodmenuid ===
+                                                                  food.foodmenuid
+                                                          );
+                                                      if (bestSellers) {
+                                                          return (
+                                                              <li
+                                                                  key={
                                                                       food.foodmenuid
-                                                              )
-                                                              .map((price) => (
-                                                                  <div
-                                                                      key={
-                                                                          price.foodmenupriceid
-                                                                      }
-                                                                  >
-                                                                      <p className="text-sm text-gray-500">
-                                                                          Php{" "}
-                                                                          {
-                                                                              price.foodmenuprice
-                                                                          }{" "}
-                                                                          /{" "}
-                                                                          {
-                                                                              price.foodmenucuttype
+                                                                  }
+                                                                  className="food-menu-item rounded-lg"
+                                                                  data-modal-target="foodModal"
+                                                                  data-modal-toggle="foodModal"
+                                                                  onClick={() => {
+                                                                      setSelectedFood(
+                                                                          food
+                                                                      );
+                                                                      setFoodModal(
+                                                                          true
+                                                                      );
+                                                                  }}
+                                                              >
+                                                                  <div className="food-menu-image-container h-[12rem]">
+                                                                      <img
+                                                                          src={`../src/assets/foods/${food.foodmenuimage}`}
+                                                                          alt={
+                                                                              food.foodmenuname
                                                                           }
-                                                                      </p>
+                                                                          className="object-cover w-full h-full rounded-t-lg"
+                                                                      />
                                                                   </div>
-                                                              ))}
-                                                      </div>
-                                                  </div>
-                                              </li>
-                                          ))
-                                        : null}
-                                </ul>
+                                                                  <div className="food-menu-info-container p-4">
+                                                                      <div className="food-menu-name-container">
+                                                                          <h3 className="text-lg font-medium text-gray-900">
+                                                                              {
+                                                                                  food.foodmenuname
+                                                                              }
+                                                                          </h3>
+                                                                      </div>
+                                                                      <div className="food-menu-description-container">
+                                                                          <p className="text-sm text-gray-500">
+                                                                              {
+                                                                                  food.foodmenudescription
+                                                                              }
+                                                                          </p>
+                                                                      </div>
+                                                                      <div className="food-menu-price-container">
+                                                                          {foodPrices
+                                                                              .filter(
+                                                                                  (
+                                                                                      price
+                                                                                  ) =>
+                                                                                      price.foodmenuid ===
+                                                                                      food.foodmenuid
+                                                                              )
+                                                                              .map(
+                                                                                  (
+                                                                                      price
+                                                                                  ) => (
+                                                                                      <div
+                                                                                          key={
+                                                                                              price.foodmenupriceid
+                                                                                          }
+                                                                                      >
+                                                                                          <p className="text-sm text-gray-500">
+                                                                                              Php{" "}
+                                                                                              {
+                                                                                                  price.foodmenuprice
+                                                                                              }{" "}
+                                                                                              /{" "}
+                                                                                              {
+                                                                                                  price.foodmenucuttype
+                                                                                              }
+                                                                                          </p>
+                                                                                      </div>
+                                                                                  )
+                                                                              )}
+                                                                      </div>
+                                                                  </div>
+                                                              </li>
+                                                          );
+                                                      } else {
+                                                          return null;
+                                                      }
+                                                  })
+                                                : null}
+                                        </ul>
+                                    </>
+                                ) : null}
+                                {filterKeyword === "Chicken" ||
+                                filterKeyword === "Pork" ||
+                                filterKeyword === "All" ? (
+                                    <>
+                                        <h3 className="text-xl font-bold text-red-900">
+                                            All Products
+                                        </h3>
+
+                                        <hr className="my-2 border-b-1 border-gray-300" />
+                                        <ul className="grid grid-cols-2 gap-4">
+                                            {foods && foodPrices
+                                                ? foods.map((food) => (
+                                                      <li
+                                                          key={food.foodmenuid}
+                                                          className="food-menu-item rounded-lg"
+                                                          data-modal-target="foodModal"
+                                                          data-modal-toggle="foodModal"
+                                                          onClick={() => {
+                                                              setSelectedFood(
+                                                                  food
+                                                              );
+                                                              setFoodModal(
+                                                                  true
+                                                              );
+                                                          }}
+                                                      >
+                                                          <div className="food-menu-image-container h-[12rem]">
+                                                              <img
+                                                                  src={`../src/assets/foods/${food.foodmenuimage}`}
+                                                                  alt={
+                                                                      food.foodmenuname
+                                                                  }
+                                                                  className="object-cover w-full h-full rounded-t-lg"
+                                                              />
+                                                          </div>
+                                                          <div className="food-menu-info-container p-4">
+                                                              <div className="food-menu-name-container">
+                                                                  <h3 className="text-lg font-medium text-gray-900">
+                                                                      {
+                                                                          food.foodmenuname
+                                                                      }
+                                                                  </h3>
+                                                              </div>
+                                                              <div className="food-menu-description-container">
+                                                                  <p className="text-sm text-gray-500">
+                                                                      {
+                                                                          food.foodmenudescription
+                                                                      }
+                                                                  </p>
+                                                              </div>
+                                                              <div className="food-menu-price-container">
+                                                                  {foodPrices
+                                                                      .filter(
+                                                                          (
+                                                                              price
+                                                                          ) =>
+                                                                              price.foodmenuid ===
+                                                                              food.foodmenuid
+                                                                      )
+                                                                      .map(
+                                                                          (
+                                                                              price
+                                                                          ) => (
+                                                                              <div
+                                                                                  key={
+                                                                                      price.foodmenupriceid
+                                                                                  }
+                                                                              >
+                                                                                  <p className="text-sm text-gray-500">
+                                                                                      Php{" "}
+                                                                                      {
+                                                                                          price.foodmenuprice
+                                                                                      }{" "}
+                                                                                      /{" "}
+                                                                                      {
+                                                                                          price.foodmenucuttype
+                                                                                      }
+                                                                                  </p>
+                                                                              </div>
+                                                                          )
+                                                                      )}
+                                                              </div>
+                                                          </div>
+                                                      </li>
+                                                  ))
+                                                : null}
+                                        </ul>
+                                    </>
+                                ) : null}
                             </div>
                         </div>
                         <div className="order-container border h-full w-[36%] p-4 bg-white">
@@ -629,7 +763,7 @@ const Menu = () => {
                                     )}
                                 </div>
 
-                                <div className="flex flex-row justify-between items-center space-x-2 mt-2">
+                                {/* <div className="flex flex-row justify-between items-center space-x-2 mt-2">
                                     {address.length > 0 ? (
                                         <button
                                             className="border-2 border-red-500 border-dashed text-red-500 hover:bg-red-500 hover:text-white px-2 py-2 rounded-lg text-sm mt-2 w-full transition duration-150 ease-in-out"
@@ -650,7 +784,7 @@ const Menu = () => {
                                         <FontAwesomeIcon icon={faSquarePlus} />{" "}
                                         Add New Address
                                     </Link>
-                                </div>
+                                </div> */}
                             </div>
                             <hr className="my-2 border-b-1 border-gray-300" />
 
@@ -837,7 +971,7 @@ const Menu = () => {
                                             to="/cart"
                                             className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm mt-4 transition duration-150 ease-in-out text-center"
                                         >
-                                            Checkout
+                                            Cart
                                         </Link>
                                         <button
                                             className="text-red-500 hover:bg-red-500 hover:text-white px-4 py-2 rounded-lg text-sm mt-2 transition duration-150 ease-in-out"
