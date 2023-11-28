@@ -4,6 +4,8 @@ import Swal from "sweetalert2";
 const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
     const [orderList, setOrderList] = useState([]);
     const [deliveryTime, setDeliveryTime] = useState("");
+    const [address, setAddress] = useState({});
+
     useState(() => {
         console.log(selectedOrder);
         const getOrderList = async () => {
@@ -24,6 +26,27 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
                 console.error("Error fetching order list:", error);
             }
         };
+
+        const getAddress = async () => {
+            try {
+                const response = await fetch(
+                    `http://localhost:7722/address/${selectedOrder.customerid}`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+                const data = await response.json();
+                setAddress(data[0]);
+                console.log(data); // Log the fetched data
+            } catch (error) {
+                console.error("Error fetching order list:", error);
+            }
+        };
+
+        getAddress();
 
         getOrderList();
     }, []);
@@ -127,6 +150,73 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
                             </svg>
                             <span className="sr-only">Close modal</span>
                         </button>
+                    </div>
+                    <div className="p-6 space-y-3">
+                        <table className="table-auto w-full">
+                            {/* [
+                                    {
+                                        "customeraddressid": "SFMA5238548110000000",
+                                        "customerid": "C56463520",
+                                        "customerfullname": "Justmyr Gutierrez",
+                                        "customercontactnumber": "09063488667",
+                                        "customerstreet": "Sitio 7",
+                                        "customerbarangay": "Balete Relocation Site",
+                                        "customercity": "Batangas City",
+                                        "customernotes": "",
+                                        "customeraddresslabel": "work",
+                                        "customeraddressdefault": true,
+                                        "addresslatitude": "13.81907555",
+                                        "addresslongitude": "121.06428337048469"
+                                    }
+                                ] */}
+
+                            <tbody>
+                                <tr>
+                                    <td className="border px-4 py-2">
+                                        <h3 className="text-lg font-semibold">
+                                            Customer Name:
+                                        </h3>
+                                    </td>
+                                    <td className="border px-4 py-2">
+                                        {address.customerfullname}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td className="border px-4 py-2">
+                                        <h3 className="text-lg font-semibold">
+                                            Contact Number:
+                                        </h3>
+                                    </td>
+                                    <td className="border px-4 py-2">
+                                        {address.customercontactnumber}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td className="border px-4 py-2">
+                                        <h3 className="text-lg font-semibold">
+                                            Address:
+                                        </h3>
+                                    </td>
+                                    <td className="border px-4 py-2">
+                                        {address.customerstreet
+                                            ? address.customerstreet + ", "
+                                            : ""}
+                                        {address.customerbarangay + ", "}
+                                        {address.customercity}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td className="border px-4 py-2">
+                                        <h3 className="text-lg font-semibold">
+                                            Notes:
+                                        </h3>
+                                    </td>
+                                    <td className="border px-4 py-2">
+                                        {address.customernotes}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                     {selectedOrder.customerorderstatus === "Pending" && (
                         <>

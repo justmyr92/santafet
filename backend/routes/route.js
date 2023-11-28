@@ -299,22 +299,41 @@ router.post("/cart/add", async (req, res) => {
 router.patch("/order/process/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        const { status, deliveryTime } = req.body;
+        const { status, deliverytime } = req.body;
+        console.log(req.body);
         let query = "";
         let values = [];
-        if (deliveryTime != "") {
-            query =
-                "UPDATE customerOrderTable SET customerOrderStatus = $1, estimated_delivery_time = $2 WHERE customerOrderID = $3";
-            values = [status, deliveryTime, id];
-        } else if (status === "Completed") {
+        // if (deliveryTime !== "" && status === "Out for delivery") {
+        //     query =
+        //         "UPDATE customerOrderTable SET customerOrderStatus = $1, estimated_delivery_time = $2 WHERE customerOrderID = $3";
+        //     values = [status, deliveryTime, id];
+        // } else if (status === "Completed" && deliveryTime === "") {
+        //     query =
+        //         "UPDATE customerOrderTable SET customerOrderStatus = $1, customerOrderPaymentStatus = $2 WHERE customerOrderID = $3";
+        //     values = [status, "Paid", id];
+        // } else {
+        //     query =
+        //         "UPDATE customerOrderTable SET customerOrderStatus = $1 WHERE customerOrderID = $2";
+        //     values = [status, id];
+        // }
+
+        if (status === "Completed" && deliverytime === "") {
             query =
                 "UPDATE customerOrderTable SET customerOrderStatus = $1, customerOrderPaymentStatus = $2 WHERE customerOrderID = $3";
             values = [status, "Paid", id];
+            console.log("1");
+        } else if (status === "Out for Delivery" && deliverytime !== "") {
+            query =
+                "UPDATE customerOrderTable SET customerOrderStatus = $1, estimated_delivery_time = $2 WHERE customerOrderID = $3";
+            values = [status, deliverytime, id];
+            console.log("2");
         } else {
             query =
                 "UPDATE customerOrderTable SET customerOrderStatus = $1 WHERE customerOrderID = $2";
             values = [status, id];
+            console.log("3");
         }
+
         const updateOrder = await pool.query(query, values);
         res.json("Order was updated!");
     } catch (err) {
@@ -616,7 +635,7 @@ router.get("/order/best", async (req, res) => {
     console.log(req);
     try {
         const mosstFood = await pool.query(
-            "SELECT foodMenuID, COUNT(*) FROM customerOrderItemTable GROUP BY foodMenuID ORDER BY COUNT(*) DESC LIMIT 5"
+            "SELECT foodMenuID, COUNT(*) FROM customerOrderItemTable GROUP BY foodMenuID ORDER BY COUNT(*) DESC LIMIT 3"
         );
 
         console.log("Query result:", mosstFood.rows);
@@ -832,7 +851,9 @@ router.post("/order/add", async (req, res) => {
 
 router.get("/order", async (req, res) => {
     try {
-        const allOrder = await pool.query("SELECT * FROM customerOrderTable");
+        const allOrder = await pool.query(
+            "SELECT * FROM customerOrderTable order by customerorderstatus ASC"
+        );
         res.json(allOrder.rows);
     } catch (err) {
         console.error(err.message);
@@ -1049,13 +1070,61 @@ router.post("/availability/add", async (req, res) => {
 
 router.post("/availability", async (req, res) => {
     try {
-        const { branchid, foodmenuid } = req.body;
+        const { branchid, foodMenuID } = req.body;
+        console.log(req.body);
         const allAvailability = await pool.query(
-            "SELECT productavailabilitytable FROM productavailabilitytable WHERE branchid = $1 AND foodMenuid = $2",
-            [branchid, foodmenuid]
+            "SELECT * FROM productAvailabilityTable WHERE branchID = $1 AND foodMenuID = $2",
+            [branchid, foodMenuID]
         );
-        console.log(allAvailability.rows, req.body);
+        console.log(allAvailability.rows, "asd");
+        res.status(200).json(allAvailability.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+    }
+});
+
+router.get("/availability/branch/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const allAvailability = await pool.query(
+            "SELECT * FROM productAvailabilityTable WHERE branchID = $1",
+            [id]
+        );
+        console.log(allAvailability.rows);
         res.json(allAvailability.rows);
+    } catch (err) {
+        console.error(err.message);
+    }
+});
+
+router.patch("/availability/update", async (req, res) => {
+    try {
+        const { branchid, foodMenuID, available } = req.body;
+        const updateAvailability = await pool.query(
+            "UPDATE productAvailabilityTable SET available = $1 WHERE branchID = $2 AND foodMenuID = $3",
+            [available, branchid, foodMenuID]
+        );
+
+        // Respond with the updated availability status
+        res.status(200).json({
+            available: available,
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+//count orders who is not completed
+router.get("/order/count/notcompleted/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const countOrder = await pool.query(
+            "SELECT COUNT(customerOrderID) FROM customerOrderTable inner join adminTable on customerOrderTable.branchID = adminTable.branchID WHERE (customerOrderStatus != 'Completed' AND customerOrderStatus != 'Out for Delivery') AND adminTable.adminID = $1",
+            [id]
+        );
+        res.json(countOrder.rows[0]);
+        console.log(countOrder.rows[0]);
     } catch (err) {
         console.error(err.message);
     }
@@ -1083,10 +1152,28 @@ router.get("/order/most/:id", async (req, res) => {
         const { id } = req.params;
         const mostFood = await pool.query(
             //inner join customer order table to customer order item table
-            "SELECT foodMenuID, COUNT(*), SUM(customerorderitemquantity) FROM customerOrderItemTable INNER JOIN customerOrderTable ON customerOrderItemTable.customerOrderID = customerOrderTable.customerOrderID WHERE customerOrderTable.customerID = $1 GROUP BY foodMenuID ORDER BY COUNT(*) DESC LIMIT 5",
+            "SELECT foodMenuID, COUNT(*), SUM(customerorderitemquantity) FROM customerOrderItemTable INNER JOIN customerOrderTable ON customerOrderItemTable.customerOrderID = customerOrderTable.customerOrderID WHERE customerOrderTable.customerID = $1 GROUP BY foodMenuID ORDER BY COUNT(*) DESC LIMIT 3",
+
             [id]
         );
         res.json(mostFood.rows);
+    } catch (err) {
+        console.error(err.message);
+    }
+});
+
+//get all sales, and order count of all branches by current year
+router.get("/sales/branch", async (req, res) => {
+    try {
+        const year = new Date().getFullYear();
+        const allSales = await pool.query(
+            // "SELECT SUM(customerOrderTotalPrice), COUNT(customerOrderID), branchName FROM customerOrderTable INNER JOIN branchTable ON customerOrderTable.branchID = branchTable.branchID WHERE EXTRACT(YEAR FROM customerOrderDate) = $1 GROUP BY branchName",
+            //"SELECT branchTable.branchName, COALESCE(SUM(customerOrderTable.customerOrderTotalPrice), 0) AS totalSales, COALESCE(COUNT(customerOrderTable.customerOrderID), 0) AS orderCount FROM branchTable LEFT JOIN customerOrderTable ON branchTable.branchID = customerOrderTable.branchID AND EXTRACT(YEAR FROM customerOrderTable.customerOrderDate) = EXTRACT(YEAR FROM NOW()) Where customerOrderTable.customerOrderStatus = 'Completed' GROUP BY branchTable.branchName ORDER BY branchTable.branchName ASC"
+            "SELECT branchTable.branchName, COALESCE(SUM(CASE WHEN customerOrderTable.customerOrderStatus = 'Completed' THEN customerOrderTable.customerOrderTotalPrice ELSE 0 END), 0) AS totalSales, COALESCE(COUNT(CASE WHEN customerOrderTable.customerOrderStatus = 'Completed' THEN customerOrderTable.customerOrderID ELSE NULL END), 0) AS orderCount FROM branchTable LEFT JOIN customerOrderTable ON branchTable.branchID = customerOrderTable.branchID AND EXTRACT(YEAR FROM customerOrderTable.customerOrderDate) = EXTRACT(YEAR FROM NOW()) GROUP BY branchTable.branchName ORDER BY totalSales DESC"
+
+            // ,[year]
+        );
+        res.json(allSales.rows);
     } catch (err) {
         console.error(err.message);
     }

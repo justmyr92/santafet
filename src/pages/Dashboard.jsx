@@ -24,6 +24,8 @@ const Dashboard = () => {
     const [orderCount, setOrderCount] = useState(0);
     const [productCount, setProductCount] = useState(0);
     const [saleCount, setSaleCount] = useState(0);
+    const [loadingProfits, setLoadingProfits] = useState(true);
+    const [branchRanking, setBranchRanking] = useState([]);
 
     const [id, setId] = useState(localStorage.getItem("userID"));
 
@@ -43,6 +45,23 @@ const Dashboard = () => {
     }, []);
 
     const [admin, setAdmin] = useState({});
+
+    useEffect(() => {
+        const fetchBranchRanking = async () => {
+            try {
+                const response = await fetch(
+                    `http://localhost:7722/sales/branch`
+                );
+                const data = await response.json();
+                console.log(data);
+                setBranchRanking(data);
+            } catch (error) {
+                console.error("Error fetching branch ranking:", error);
+            }
+        };
+
+        fetchBranchRanking();
+    }, []);
 
     useEffect(() => {
         const fetchAdmin = async () => {
@@ -271,6 +290,38 @@ const Dashboard = () => {
                     <div className="mt-4 grid grid-cols-2 gap-4">
                         <div className="graph-container">
                             <Bar data={chartData} options={chartOptions} />
+                        </div>
+                        <div className="table-container">
+                            <table className="min-w-full bg-white border border-gray-300 rounded-lg overflow-hidden">
+                                <thead className="bg-gray-200 text-gray-700">
+                                    <tr>
+                                        <th className="py-2 px-4 text-left font-semibold text-sm">
+                                            Branch Name
+                                        </th>
+                                        <th className="py-2 px-4 text-left font-semibold text-sm">
+                                            Sales
+                                        </th>
+                                        <th className="py-2 px-4 text-left font-semibold text-sm">
+                                            Orders
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="text-gray-600">
+                                    {branchRanking.map((item) => (
+                                        <tr key={item.branchname}>
+                                            <td className="py-2 px-4">
+                                                {item.branchname}
+                                            </td>
+                                            <td className="py-2 px-4">
+                                                {item.totalsales}
+                                            </td>
+                                            <td className="py-2 px-4">
+                                                {item.ordercount}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

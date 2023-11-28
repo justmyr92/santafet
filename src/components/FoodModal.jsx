@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-const FoodModal = ({ showModal, setShowModal, selectedFood, foodPrices }) => {
+const FoodModal = ({
+    showModal,
+    setShowModal,
+    selectedFood,
+    foodPrices,
+    available,
+}) => {
     const [customerID, setCustomerID] = useState(
         localStorage.getItem("userID")
     );
@@ -11,6 +17,7 @@ const FoodModal = ({ showModal, setShowModal, selectedFood, foodPrices }) => {
     const [foods, setFoods] = useState([]);
 
     const addToCart = async () => {
+        console.log(available);
         try {
             //if customerID is null, redirect to login
             console.log(customerID);
@@ -22,6 +29,15 @@ const FoodModal = ({ showModal, setShowModal, selectedFood, foodPrices }) => {
                     timer: 1500,
                 });
                 window.location.href = "/login";
+            }
+            if (available === "Unavailable") {
+                await Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text: "This item is unavailable!",
+                    timer: 1500,
+                });
+                return;
             }
 
             const newCart = {
@@ -200,8 +216,9 @@ const FoodModal = ({ showModal, setShowModal, selectedFood, foodPrices }) => {
                         <button
                             data-modal-hide="foodModal"
                             type="button"
-                            className="text-white bg-red-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                            className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 rounded-lg text-sm font-medium px-5 py-2.5 hover:text-white focus:z-10"
                             onClick={() => addToCart()}
+                            disabled={available === "Unavailable"}
                         >
                             Add to cart
                         </button>

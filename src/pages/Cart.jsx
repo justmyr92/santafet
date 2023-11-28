@@ -71,7 +71,7 @@ const Cart = () => {
                             "Your cart item has been deleted.",
                             "success"
                         );
-                        getCartDetails();
+                        setCartDetails([]);
                     } else {
                         console.error("Failed to delete cart item.");
                     }
@@ -85,10 +85,12 @@ const Cart = () => {
     const getTotals = () => {
         let total = 0;
         let totalItems = 0;
-        cartDetails.forEach((cartDetail) => {
+        cartDetails.forEach((cartDetail, index) => {
             if (checkedProducts.includes(cartDetail.cartid)) {
-                total += cartDetail.foodmenuprice * cartDetail.quantity;
-                totalItems += cartDetail.quantity;
+                total += parseFloat(
+                    cartDetail.foodmenuprice * quantities[index]
+                );
+                totalItems += parseInt(quantities[index]);
             }
         });
         setCheckedTotal(total);
@@ -272,9 +274,110 @@ const Cart = () => {
         getBranches();
     }, []);
 
+    const [quantities, setQuantities] = useState([]);
+
     useEffect(() => {
         getTotals();
     }, [checkedProducts, cartDetails]);
+    useEffect(() => {
+        getTotals();
+    }, [quantities]);
+
+    useEffect(() => {
+        // Initialize quantities when cartDetails changes
+        if (cartDetails && cartDetails.length > 0) {
+            const initialQuantities = cartDetails.map(
+                (cartDetail) => cartDetail.quantity
+            );
+            setQuantities(initialQuantities);
+        }
+    }, [cartDetails]);
+
+    const handleUpdateQuantity = (e, cartID, index) => {
+        e.preventDefault();
+        const newQuantities = [...quantities];
+        newQuantities[index] = e.target.value;
+        setQuantities(newQuantities);
+        const UpdateQuantity = async (cartID) => {
+            try {
+                const response = await fetch(
+                    `http://localhost:7722/cart/update/${cartID}`,
+                    {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            quantity: newQuantities[index],
+                        }),
+                    }
+                );
+
+                const updateCartJSON = await response.json();
+
+                if (updateCartJSON.ok) {
+                    getCartDetails();
+                    getTotals();
+                }
+            } catch (error) {
+                console.error("Error updating cart:", error);
+            }
+        };
+        UpdateQuantity(cartID);
+    };
+
+    // router.delete("/cart/delete/all/:customerid", async (req, res) => {
+    //     try {
+    //         const { customerid } = req.params;
+    //         const deleteCart = await pool.query(
+    //             "DELETE FROM cartTable WHERE customerID = $1",
+    //             [customerid]
+    //         );
+    //         res.json("Cart was deleted!");
+    //     } catch (err) {
+    //         console.error(err.message);
+    //     }
+    // });
+
+    const deleteAllCart = async () => {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete all!",
+            showCancelButton: true,
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(
+                        `http://localhost:7722/cart/delete/all/${ID}`,
+                        {
+                            method: "DELETE",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                        }
+                    );
+                    const deleteCartJSON = await response.json();
+
+                    if (deleteCartJSON.ok) {
+                        Swal.fire(
+                            "Deleted!",
+                            "Your cart item has been deleted.",
+                            "success"
+                        );
+                        getCartDetails();
+                    } else {
+                        console.error("Failed to delete cart item.");
+                    }
+                } catch (error) {
+                    console.error("Error deleting cart item:", error);
+                }
+            }
+        });
+    };
 
     const [page, setPage] = useState(1);
     return (
@@ -285,7 +388,10 @@ const Cart = () => {
                 <div className="container mx-auto my-8 p-8 bg-white shadow-lg">
                     <div className="flex justify-between items-center">
                         <h2 className="text-3xl font-bold mb-4">My Cart</h2>
-                        <button className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
+                        <button
+                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                            onClick={deleteAllCart}
+                        >
                             Clear Cart
                         </button>
                     </div>
@@ -354,8 +460,20 @@ const Cart = () => {
                                         <div className="col-span-1 flex flex-col justify-center">
                                             <input
                                                 type="number"
-                                                className="w-full border border-gray-300 px-3 py-2 rounded"
-                                                value={cartDetail.quantity}
+                                                className={`w-full border border-gray-300 px-3 py-2 rounded ${
+                                                    quantities[index] <= 0
+                                                        ? "border-red-500"
+                                                        : ""
+                                                }`}
+                                                value={quantities[index]}
+                                                onChange={(e) =>
+                                                    handleUpdateQuantity(
+                                                        e,
+                                                        cartDetail.cartid,
+                                                        index
+                                                    )
+                                                }
+                                                min="1"
                                             />
                                         </div>
                                         <div className="col-span-2  flex flex-col justify-center">
@@ -369,7 +487,7 @@ const Cart = () => {
                                             <p className="text-lg">
                                                 {(
                                                     cartDetail.foodmenuprice *
-                                                    cartDetail.quantity
+                                                    quantities[index]
                                                 ).toFixed(2)}
                                             </p>
                                         </div>

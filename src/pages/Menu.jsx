@@ -11,6 +11,7 @@ import AddressModal from "../components/AddressModal";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import Swal from "sweetalert2";
 
 const Menu = () => {
     const [foods, setFoods] = useState([]);
@@ -21,7 +22,9 @@ const Menu = () => {
     const [addressModal, setAddressModal] = useState(false);
     const [selectedAddress, setSelectedAddress] = useState({});
     const [address, setAddress] = useState([]);
-    const [customerID, setCustomerID] = useState("");
+    const [customerID, setCustomerID] = useState(
+        localStorage.getItem("userID")
+    );
     const filterKeywords = [
         "All",
         "Chicken",
@@ -44,7 +47,9 @@ const Menu = () => {
 
     const [bestSeller, setBestSeller] = useState([]);
 
-    const [search, setSearch] = useState("");
+    const [reload, setReload] = useState(false);
+
+    const [available, setAvailable] = useState([]);
 
     useEffect(() => {
         setCustomerID(localStorage.getItem("userID"));
@@ -53,27 +58,9 @@ const Menu = () => {
             let dataFood = []; // Declare dataFood here
 
             try {
-                if (filterKeyword === "Chicken" || filterKeyword === "Pork") {
-                    console.log(filterKeyword);
-                    const responseFood = await fetch(
-                        "http://localhost:7722/food/" + filterKeyword
-                    );
-                    dataFood = await responseFood.json();
-                    setFoods(dataFood);
-                } else {
-                    const responseFood = await fetch(
-                        "http://localhost:7722/food"
-                    );
-                    dataFood = await responseFood.json();
-                    setFoods(dataFood);
-                }
-                // else if (filterKeyword === "Best Seller") {
-                //     const responseFood = await fetch(
-                //         "http://localhost:7722/order/best"
-                //     );
-                //     dataFood = await responseFood.json();
-                //     setBestSeller(dataFood);
-                // }
+                const responseFood = await fetch("http://localhost:7722/food");
+                dataFood = await responseFood.json();
+                setFoods(dataFood);
 
                 const responseFoodPrice = await fetch(
                     "http://localhost:7722/food/price"
@@ -91,6 +78,7 @@ const Menu = () => {
                 );
                 const dataBranchLocation = await responseBranchLocation.json();
                 setBranchLocation(dataBranchLocation);
+                console.log(dataBranchLocation);
 
                 setFoods(dataFood);
                 setFoodPrices(dataFoodPrice);
@@ -147,7 +135,7 @@ const Menu = () => {
     const deleteFromCart = async (cartID) => {
         try {
             const response = await fetch(
-                "http://localhost:7722/cart/delete/" + cartID,
+                "http://localhost:7722/cart/delete/item/" + cartID,
                 {
                     method: "DELETE",
                 }
@@ -211,115 +199,179 @@ const Menu = () => {
             );
         }
     }, [selectedAddress]);
+    useEffect(() => {
+        const fetchAvailableData = async (branchID) => {
+            try {
+                const response = await fetch(
+                    `http://localhost:7722/availability/branch/${branchID}`
+                );
 
-    const submitOrder = async () => {
-        console.log(selectedAddress, customerID);
-        if (customerID === "") {
-            alert("Please select an address");
-            return;
-        }
-        const order = {
-            //id random int
-            customerorderid: Math.random().toString(36).substr(2, 9),
-            customerid: localStorage.getItem("userID"),
-            customeraddressid: selectedAddress.customeraddressid,
-            customerorderdate: new Date()
-                .toISOString()
-                .slice(0, 19)
-                .replace("T", " "),
-            customerorderstatus: "Pending",
-            customerordertotalprice: cart.reduce(
-                (total, item) =>
-                    parseFloat(total) +
-                    parseFloat(
-                        foodPrices.find(
-                            (price) =>
-                                price.foodmenupriceid === item.foodmenupriceid
-                        ).foodmenuprice
-                    ) *
-                        item.quantity,
-                50
-            ),
-            customerorderpaymentmethod: "Cash on Delivery",
-            customerorderpaymentstatus: "Pending",
-            deliverypersonid: selectedBranch,
-            estimated_delivery_time: "",
-            order_method: orderType,
+                const data = await response.json();
+
+                setAvailable(data);
+
+                console.log(data, "Asdasd");
+            } catch (error) {
+                console.error(error);
+            }
         };
-        console.log(order);
-        try {
-            const response = await fetch("http://localhost:7722/order/add", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(order),
-            });
 
-            if (response.ok) {
-                cart.forEach(async (item) => {
-                    const orderItem = {
-                        customerorderitemid: Math.random()
-                            .toString(36)
-                            .substr(2, 9),
-                        customerorderid: order.customerorderid,
-                        foodmenuid: item.foodmenuid,
-                        foodmenupriceid: item.foodmenupriceid,
-                        customerorderitemquantity: item.quantity,
-                        customerorderitemtotalprice:
-                            item.quantity *
+        fetchAvailableData(selectedBranch);
+    }, [selectedBranch]);
+
+    const handleBranchChange = (e) => {
+        console.log(e.target.value);
+        setSelectedBranch(e.target.value);
+    };
+
+    const [searchKeyword, setSearchKeyword] = useState("");
+
+    const handleSearchChange = (e) => {
+        setFilterKeyword("All");
+
+        setSearchKeyword(e.target.value);
+    };
+
+    const submitOrder = async (e) => {
+        e.preventDefault();
+        Swal.fire({
+            title: "Are you sure you want to place this order?",
+            text: "You will not be able to change your order once it is placed.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, place order",
+            cancelButtonText: "No, cancel",
+            reverseButtons: true,
+        }).then(async (result) => {
+            console.log(selectedAddress, customerID);
+            if (customerID === "") {
+                alert("Please select an address");
+                return;
+            }
+            if (cart.length === 0) {
+                alert("Please add items to cart");
+                return;
+            }
+            const order = {
+                //id random int
+                customerorderid: Math.random().toString(36).substr(2, 9),
+                customerid: localStorage.getItem("userID"),
+                customeraddressid: selectedAddress.customeraddressid,
+                customerorderdate: new Date()
+                    .toISOString()
+                    .slice(0, 19)
+                    .replace("T", " "),
+                customerorderstatus: "Pending",
+                customerordertotalprice: cart.reduce(
+                    (total, item) =>
+                        parseFloat(total) +
+                        parseFloat(
                             foodPrices.find(
                                 (price) =>
                                     price.foodmenupriceid ===
                                     item.foodmenupriceid
-                            ).foodmenuprice,
-                    };
+                            ).foodmenuprice
+                        ) *
+                            item.quantity,
+                    50
+                ),
+                customerorderpaymentmethod: "Cash on Delivery",
+                customerorderpaymentstatus: "Pending",
+                deliverypersonid: selectedBranch,
+                estimated_delivery_time: "",
+                order_method: orderType,
+            };
+            console.log(order);
+            try {
+                const response = await fetch(
+                    "http://localhost:7722/order/add",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(order),
+                    }
+                );
 
-                    console.log(orderItem);
+                if (response.ok) {
+                    cart.forEach(async (item) => {
+                        const orderItem = {
+                            customerorderitemid: Math.random()
+                                .toString(36)
+                                .substr(2, 9),
+                            customerorderid: order.customerorderid,
+                            foodmenuid: item.foodmenuid,
+                            foodmenupriceid: item.foodmenupriceid,
+                            customerorderitemquantity: item.quantity,
+                            customerorderitemtotalprice:
+                                item.quantity *
+                                foodPrices.find(
+                                    (price) =>
+                                        price.foodmenupriceid ===
+                                        item.foodmenupriceid
+                                ).foodmenuprice,
+                        };
+
+                        console.log(orderItem);
+                        try {
+                            const response = await fetch(
+                                "http://localhost:7722/order/item/add",
+                                {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify(orderItem),
+                                }
+                            );
+
+                            if (response.ok) {
+                                console.log("Order item added");
+                            } else {
+                                console.error("Error adding order item");
+                            }
+                        } catch (error) {
+                            console.error(error);
+                        }
+                    });
+
                     try {
-                        const response = await fetch(
-                            "http://localhost:7722/order/item/add",
+                        const responseDeleteCart = await fetch(
+                            "http://localhost:7722/customer/cart/delete/" +
+                                customerID,
                             {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                },
-                                body: JSON.stringify(orderItem),
+                                method: "DELETE",
                             }
                         );
 
-                        if (response.ok) {
-                            console.log("Order item added");
-                        } else {
-                            console.error("Error adding order item");
+                        if (responseDeleteCart.ok) {
+                            console.log("Cart deleted");
+
+                            window.location.href = "/orderhistory";
                         }
                     } catch (error) {
                         console.error(error);
                     }
-                });
-
-                try {
-                    const responseDeleteCart = await fetch(
-                        "http://localhost:7722/customer/cart/delete/" +
-                            customerID,
-                        {
-                            method: "DELETE",
-                        }
-                    );
-
-                    if (responseDeleteCart.ok) {
-                        console.log("Cart deleted");
-                    }
-                } catch (error) {
-                    console.error(error);
                 }
+            } catch (error) {
+                console.error(error);
             }
-        } catch (error) {
-            console.error(error);
-        }
-
-        Window.location.reload();
+        });
     };
+
+    const [selectedAvailable, setSelectedAvailable] = useState("");
+
+    useEffect(() => {
+        if (selectedFood) {
+            setSelectedAvailable(
+                available.find(
+                    (avail) => avail.foodmenuid === selectedFood.foodmenuid
+                )?.available || "DefaultUnavailableValue"
+            );
+        }
+        console.log(selectedAvailable);
+    }, [selectedFood, available]);
 
     return (
         <>
@@ -329,6 +381,7 @@ const Menu = () => {
                     setShowModal={setFoodModal}
                     selectedFood={selectedFood}
                     foodPrices={foodPrices}
+                    available={selectedAvailable}
                 />
             ) : null}
             {addressModal ? (
@@ -380,10 +433,11 @@ const Menu = () => {
                                             name="food-search"
                                             className="block w-full p-4 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
                                             placeholder="Search Foods and Products"
+                                            value={searchKeyword}
+                                            onChange={(e) =>
+                                                handleSearchChange(e)
+                                            }
                                         />
-                                        <button className="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2">
-                                            Search
-                                        </button>
                                     </div>
                                 </form>
                             </div>
@@ -397,9 +451,10 @@ const Menu = () => {
                                                     ? "bg-gray-200"
                                                     : ""
                                             }`}
-                                            onClick={() =>
+                                            onClick={() => (
+                                                setSearchKeyword(""),
                                                 setFilterKeyword(keyword)
-                                            }
+                                            )}
                                         >
                                             {keyword}
                                         </li>
@@ -408,8 +463,8 @@ const Menu = () => {
                             </div>
                             <hr className="my-2 border-b-1 border-gray-300" />
                             <div className="menu-container mt-4">
-                                {filterKeyword === "Your Favorites" ||
-                                filterKeyword === "All" ? (
+                                {filterKeyword === "Your Favorites" &&
+                                available.length > 0 ? (
                                     <>
                                         <h3 className="text-xl font-bold text-red-900">
                                             Your Favorites
@@ -443,6 +498,18 @@ const Menu = () => {
                                                                       setSelectedFood(
                                                                           food
                                                                       );
+                                                                      setSelectedAvailable(
+                                                                          available.find(
+                                                                              (
+                                                                                  avail
+                                                                              ) =>
+                                                                                  avail.foodmenuid ===
+                                                                                  food.foodmenuid
+                                                                          )
+                                                                              ?.available ||
+                                                                              "DefaultUnavailableValue"
+                                                                      );
+
                                                                       setFoodModal(
                                                                           true
                                                                       );
@@ -458,12 +525,30 @@ const Menu = () => {
                                                                       />
                                                                   </div>
                                                                   <div className="food-menu-info-container p-4">
-                                                                      <div className="food-menu-name-container">
+                                                                      <div className="food-menu-name-container flex flex-row justify-between items-center">
                                                                           <h3 className="text-lg font-medium text-gray-900">
                                                                               {
                                                                                   food.foodmenuname
                                                                               }
                                                                           </h3>
+                                                                          {available.find(
+                                                                              (
+                                                                                  avail
+                                                                              ) =>
+                                                                                  avail.foodmenuid ===
+                                                                                  food.foodmenuid
+                                                                          )
+                                                                              .available ===
+                                                                          "Available" ? (
+                                                                              <p className="text-sm text-green-500">
+                                                                                  Available
+                                                                              </p>
+                                                                          ) : (
+                                                                              <p className="text-sm text-red-500">
+                                                                                  Not
+                                                                                  Available
+                                                                              </p>
+                                                                          )}
                                                                       </div>
                                                                       <div className="food-menu-description-container">
                                                                           <p className="text-sm text-gray-500">
@@ -515,8 +600,8 @@ const Menu = () => {
                                         </ul>
                                     </>
                                 ) : null}
-                                {filterKeyword === "Best Seller" ||
-                                filterKeyword === "All" ? (
+                                {filterKeyword === "Best Seller" &&
+                                available.length > 0 ? (
                                     <>
                                         <h3 className="text-xl font-bold text-red-900">
                                             Best Seller
@@ -564,12 +649,30 @@ const Menu = () => {
                                                                       />
                                                                   </div>
                                                                   <div className="food-menu-info-container p-4">
-                                                                      <div className="food-menu-name-container">
+                                                                      <div className="food-menu-name-container flex flex-row justify-between items-center">
                                                                           <h3 className="text-lg font-medium text-gray-900">
                                                                               {
                                                                                   food.foodmenuname
                                                                               }
                                                                           </h3>
+                                                                          {available.find(
+                                                                              (
+                                                                                  avail
+                                                                              ) =>
+                                                                                  avail.foodmenuid ===
+                                                                                  food.foodmenuid
+                                                                          )
+                                                                              .available ===
+                                                                          "Available" ? (
+                                                                              <p className="text-sm text-green-500">
+                                                                                  Available
+                                                                              </p>
+                                                                          ) : (
+                                                                              <p className="text-sm text-red-500">
+                                                                                  Not
+                                                                                  Available
+                                                                              </p>
+                                                                          )}
                                                                       </div>
                                                                       <div className="food-menu-description-container">
                                                                           <p className="text-sm text-gray-500">
@@ -621,9 +724,10 @@ const Menu = () => {
                                         </ul>
                                     </>
                                 ) : null}
-                                {filterKeyword === "Chicken" ||
-                                filterKeyword === "Pork" ||
-                                filterKeyword === "All" ? (
+                                {(filterKeyword === "Chicken" ||
+                                    filterKeyword === "Pork" ||
+                                    filterKeyword === "All") &&
+                                available.length > 0 ? (
                                     <>
                                         <h3 className="text-xl font-bold text-red-900">
                                             All Products
@@ -632,80 +736,115 @@ const Menu = () => {
                                         <hr className="my-2 border-b-1 border-gray-300" />
                                         <ul className="grid grid-cols-2 gap-4">
                                             {foods && foodPrices
-                                                ? foods.map((food) => (
-                                                      <li
-                                                          key={food.foodmenuid}
-                                                          className="food-menu-item rounded-lg"
-                                                          data-modal-target="foodModal"
-                                                          data-modal-toggle="foodModal"
-                                                          onClick={() => {
-                                                              setSelectedFood(
-                                                                  food
-                                                              );
-                                                              setFoodModal(
-                                                                  true
-                                                              );
-                                                          }}
-                                                      >
-                                                          <div className="food-menu-image-container h-[12rem]">
-                                                              <img
-                                                                  src={`../src/assets/foods/${food.foodmenuimage}`}
-                                                                  alt={
-                                                                      food.foodmenuname
-                                                                  }
-                                                                  className="object-cover w-full h-full rounded-t-lg"
-                                                              />
-                                                          </div>
-                                                          <div className="food-menu-info-container p-4">
-                                                              <div className="food-menu-name-container">
-                                                                  <h3 className="text-lg font-medium text-gray-900">
-                                                                      {
+                                                ? foods.map((food) =>
+                                                      (food.foodmenucategory ===
+                                                          filterKeyword ||
+                                                          filterKeyword ===
+                                                              "All") &&
+                                                      (food.foodmenuname
+                                                          .toLowerCase()
+                                                          .includes(
+                                                              searchKeyword.toLowerCase()
+                                                          ) ||
+                                                          food.foodmenucategory
+                                                              .toLowerCase()
+                                                              .includes(
+                                                                  searchKeyword.toLowerCase()
+                                                              )) ? (
+                                                          <li
+                                                              key={
+                                                                  food.foodmenuid
+                                                              }
+                                                              className="food-menu-item rounded-lg"
+                                                              data-modal-target="foodModal"
+                                                              data-modal-toggle="foodModal"
+                                                              onClick={() => {
+                                                                  setSelectedFood(
+                                                                      food
+                                                                  );
+                                                                  setFoodModal(
+                                                                      true
+                                                                  );
+                                                              }}
+                                                          >
+                                                              <div className="food-menu-image-container h-[12rem]">
+                                                                  <img
+                                                                      src={`../src/assets/foods/${food.foodmenuimage}`}
+                                                                      alt={
                                                                           food.foodmenuname
                                                                       }
-                                                                  </h3>
+                                                                      className="object-cover w-full h-full rounded-t-lg"
+                                                                  />
                                                               </div>
-                                                              <div className="food-menu-description-container">
-                                                                  <p className="text-sm text-gray-500">
-                                                                      {
-                                                                          food.foodmenudescription
-                                                                      }
-                                                                  </p>
-                                                              </div>
-                                                              <div className="food-menu-price-container">
-                                                                  {foodPrices
-                                                                      .filter(
+                                                              <div className="food-menu-info-container p-4">
+                                                                  <div className="food-menu-name-container flex flex-row justify-between items-center">
+                                                                      <h3 className="text-lg font-medium text-gray-900">
+                                                                          {
+                                                                              food.foodmenuname
+                                                                          }
+                                                                      </h3>
+                                                                      {available.find(
                                                                           (
-                                                                              price
+                                                                              avail
                                                                           ) =>
-                                                                              price.foodmenuid ===
+                                                                              avail.foodmenuid ===
                                                                               food.foodmenuid
                                                                       )
-                                                                      .map(
-                                                                          (
-                                                                              price
-                                                                          ) => (
-                                                                              <div
-                                                                                  key={
-                                                                                      price.foodmenupriceid
-                                                                                  }
-                                                                              >
-                                                                                  <p className="text-sm text-gray-500">
-                                                                                      Php{" "}
-                                                                                      {
-                                                                                          price.foodmenuprice
-                                                                                      }{" "}
-                                                                                      /{" "}
-                                                                                      {
-                                                                                          price.foodmenucuttype
-                                                                                      }
-                                                                                  </p>
-                                                                              </div>
-                                                                          )
+                                                                          .available ===
+                                                                      "Available" ? (
+                                                                          <p className="text-sm text-green-500">
+                                                                              Available
+                                                                          </p>
+                                                                      ) : (
+                                                                          <p className="text-sm text-red-500">
+                                                                              Not
+                                                                              Available
+                                                                          </p>
                                                                       )}
+                                                                  </div>
+                                                                  <div className="food-menu-description-container">
+                                                                      <p className="text-sm text-gray-500">
+                                                                          {
+                                                                              food.foodmenudescription
+                                                                          }
+                                                                      </p>
+                                                                  </div>
+                                                                  <div className="food-menu-price-container">
+                                                                      {foodPrices
+                                                                          .filter(
+                                                                              (
+                                                                                  price
+                                                                              ) =>
+                                                                                  price.foodmenuid ===
+                                                                                  food.foodmenuid
+                                                                          )
+                                                                          .map(
+                                                                              (
+                                                                                  price
+                                                                              ) => (
+                                                                                  <div
+                                                                                      key={
+                                                                                          price.foodmenupriceid
+                                                                                      }
+                                                                                  >
+                                                                                      <p className="text-sm text-gray-500">
+                                                                                          Php{" "}
+                                                                                          {
+                                                                                              price.foodmenuprice
+                                                                                          }{" "}
+                                                                                          /{" "}
+                                                                                          {
+                                                                                              price.foodmenucuttype
+                                                                                          }
+                                                                                      </p>
+                                                                                  </div>
+                                                                              )
+                                                                          )}
+                                                                  </div>
                                                               </div>
-                                                          </div>
-                                                      </li>
-                                                  ))
+                                                          </li>
+                                                      ) : null
+                                                  )
                                                 : null}
                                         </ul>
                                     </>
@@ -798,24 +937,17 @@ const Menu = () => {
                                 </h3>
                                 <div className="input-group">
                                     <select
-                                        key={branchSelectKey} // Add key to the select element
+                                        key={branchSelectKey}
                                         name="branch"
                                         id="branch"
                                         className="w-full border-2 border-yellow-300 border-dashed rounded-lg px-4 py-2 text-sm text-gray-500"
-                                        onChange={(e) => {
-                                            setSelectedBranch(e.target.value);
-                                        }}
+                                        onChange={(e) => handleBranchChange(e)}
+                                        value={selectedBranch}
                                     >
                                         {branchLocation.map((location) => (
                                             <option
                                                 key={location.branchid}
                                                 value={location.branchid}
-                                                selected={
-                                                    location.branchid ===
-                                                    nearestBranch
-                                                        ? true
-                                                        : false
-                                                }
                                             >
                                                 {location.branchname}{" "}
                                                 {location.branchid ===
@@ -845,6 +977,7 @@ const Menu = () => {
                                         onChange={(e) => {
                                             setOrderType(e.target.value);
                                         }}
+                                        defaultValue={orderType}
                                     >
                                         <option value="Delivery">
                                             Delivery

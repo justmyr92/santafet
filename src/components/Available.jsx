@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 //showModal={showAvailabilityModal} setShowModal={setShowAvailabilityModal} foodMenuID={row.foodmenuid} setReload={setReload}
 const Available = ({ showModal, setShowModal, foodMenuID, setReload }) => {
-    const [id, setId] = useState(localStorage.getItem("userID"));
+    // Initialize state with parsed values from local storage or default values
+    const [id, setId] = useState(() => localStorage.getItem("userID") || "");
     const [userRoleID, setUserRoleID] = useState(
-        localStorage.getItem("userRoleID")
+        () => localStorage.getItem("userRoleID") || ""
     );
     const [admin, setAdmin] = useState({});
+    console.log(foodMenuID, "Asdasdasdasds");
+    const [availability, setAvailability] = useState([]);
+    const [selectedOption, setSelectedOption] = useState("");
 
+    // Fetch admin data when 'id' changes
     useEffect(() => {
         const fetchAdmin = async () => {
             try {
@@ -17,21 +23,21 @@ const Available = ({ showModal, setShowModal, foodMenuID, setReload }) => {
                 setAdmin(data);
             } catch (error) {
                 console.error("Error fetching admin data:", error);
+                // Handle the error (e.g., display a message to the user)
             }
         };
 
         fetchAdmin();
-    }, [id]); // Added id as a dependency
+    }, []);
 
-    const [availability, setAvailability] = useState([]);
-
+    // Fetch availability data when 'foodMenuID' or 'admin.branchid' changes
     useEffect(() => {
         const fetchAvailability = async () => {
-            const data1 = {
-                branch: admin.branchid,
-                foodMenu: foodMenuID,
-            };
             try {
+                const data1 = {
+                    branchid: admin.branchid,
+                    foodMenuID: foodMenuID,
+                };
                 const response = await fetch(
                     `http://localhost:7722/availability/`,
                     {
@@ -42,17 +48,89 @@ const Available = ({ showModal, setShowModal, foodMenuID, setReload }) => {
                         body: JSON.stringify(data1),
                     }
                 );
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
                 const data = await response.json();
-                setAvailability(data);
+
+                // Check if data is not empty and has the expected structure
+                if (data && data.available) {
+                    console.log(data);
+                    setAvailability(data);
+                    setSelectedOption(data.available);
+                } else {
+                    console.error("Invalid or empty response:", data);
+                    // Handle the situation accordingly (e.g., set default values)
+                }
             } catch (error) {
                 console.error("Error fetching availability data:", error);
+                // Handle the error (e.g., display a message to the user)
             }
         };
 
         fetchAvailability();
+    }, [admin.branchid]);
 
-        console.log(availability);
-    }, [foodMenuID, admin.branchid]); // Added foodMenuID and admin.branchid as a dependency
+    useEffect(() => {
+        console.log(selectedOption);
+    }, [selectedOption]);
+
+    const handleUpdate = async () => {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#6366F1",
+            cancelButtonColor: "#EF4444",
+            confirmButtonText: "Yes, update it!",
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const data1 = {
+                        branchid: admin.branchid,
+                        foodMenuID: foodMenuID,
+                        available: selectedOption,
+                    };
+                    const response = await fetch(
+                        `http://localhost:7722/availability/update`,
+                        {
+                            method: "PATCH",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify(data1),
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error(
+                            `HTTP error! Status: ${response.status}`
+                        );
+                    }
+
+                    const data = await response.json();
+
+                    // Check if data is not empty and has the expected structure
+                    if (data && data.available) {
+                        console.log(data);
+                        setAvailability(data);
+                        setSelectedOption(data.available);
+                        setReload(true);
+                        setShowModal(!showModal);
+                    } else {
+                        console.error("Invalid or empty response:", data);
+                        // Handle the situation accordingly (e.g., set default values)
+                    }
+                } catch (error) {
+                    console.error("Error fetching availability data:", error);
+                    // Handle the error (e.g., display a message to the user)
+                }
+            }
+        });
+    };
 
     return (
         <div
@@ -71,6 +149,7 @@ const Available = ({ showModal, setShowModal, foodMenuID, setReload }) => {
                             type="button"
                             class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center"
                             data-modal-hide="default-modal"
+                            onClick={() => setShowModal(!showModal)}
                         >
                             <svg
                                 class="w-3 h-3"
@@ -90,19 +169,64 @@ const Available = ({ showModal, setShowModal, foodMenuID, setReload }) => {
                             <span class="sr-only">Close modal</span>
                         </button>
                     </div>
-                    <div class="p-4 md:p-5 space-y-4"></div>
+                    <div class="p-4 md:p-5 space-y-4">
+                        <div class="flex flex-col">
+                            <label
+                                for="availability"
+                                class="mb-1 text-xs sm:text-sm tracking-wide text-gray-600"
+                            >
+                                Availability
+                            </label>
+                            <div class="relative">
+                                {selectedOption && (
+                                    <>
+                                        <select
+                                            id="availability"
+                                            name="availability"
+                                            value={selectedOption}
+                                            onChange={(e) =>
+                                                setSelectedOption(
+                                                    e.target.value
+                                                )
+                                            }
+                                            class="appearance-none w-full py-2 px-4 bg-gray-50 border border-gray-300 rounded-md text-base text-gray-900 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                                        >
+                                            <option
+                                                value="Available"
+                                                key="Available"
+                                            >
+                                                Available
+                                            </option>
+                                            <option
+                                                value="Unavailable"
+                                                key="Unavailable"
+                                                selected={
+                                                    selectedOption ===
+                                                    "Unavailable"
+                                                } // Set selected based on selectedOption
+                                            >
+                                                Unavailable
+                                            </option>
+                                        </select>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                     <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b ">
                         <button
                             data-modal-hide="default-modal"
                             type="button"
                             class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                            onClick={() => handleUpdate()} //handleUpdate
                         >
-                            I accept
+                            Submit
                         </button>
                         <button
                             data-modal-hide="default-modal"
                             type="button"
                             class="ms-3 text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10"
+                            onClick={() => setShowModal(!showModal)}
                         >
                             Decline
                         </button>

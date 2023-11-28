@@ -54,7 +54,11 @@ const Orders = () => {
 
             const data = await response.json();
             console.log("Orders Data:", data);
-            setOrders(data);
+            //sort the data asc customerorderstatus
+            const new_data = data.sort((a, b) =>
+                a.customerorderstatus < b.customerorderstatus ? 1 : -1
+            );
+            setOrders(new_data);
             setReload(false);
         };
 
@@ -83,11 +87,6 @@ const Orders = () => {
             format: (row) => {
                 const date = new Date(row.customerorderdate);
                 return `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`;
-            },
-            sortFunction: (a, b) => {
-                const dateA = new Date(a.customerorderdate);
-                const dateB = new Date(b.customerorderdate);
-                return dateB - dateA;
             },
         },
         {

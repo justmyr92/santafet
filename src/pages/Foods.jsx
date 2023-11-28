@@ -87,14 +87,6 @@ const Foods = () => {
                     >
                         <FontAwesomeIcon icon={faEdit} />
                     </button>
-                    {showAvailabilityModal && (
-                        <Available
-                            showModal={showAvailabilityModal}
-                            setShowModal={setShowAvailabilityModal}
-                            foodMenuID={row.foodmenuid}
-                            setReload={setReload}
-                        />
-                    )}
                 </div>
             ),
         },
@@ -122,6 +114,14 @@ const Foods = () => {
         <>
             <section>
                 <Sidebar />
+                {showAvailabilityModal && (
+                    <Available
+                        showModal={showAvailabilityModal}
+                        setShowModal={setShowAvailabilityModal}
+                        foodMenuID={selectedFood.foodmenuid}
+                        setReload={setReload}
+                    />
+                )}
                 <div className="p-4 sm:ml-64">
                     <div className="p-4 border-2 border-gray-200 border-dashed rounded-lg">
                         <div className="header bg-white w-sm mb-4 flex justify-between items-center">

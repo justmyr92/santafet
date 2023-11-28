@@ -73,6 +73,8 @@ const Sidebar = () => {
     );
     const [admin, setAdmin] = useState({});
 
+    const [orderCount, setOrderCount] = useState(0);
+
     useEffect(() => {
         const fetchAdmin = async () => {
             try {
@@ -85,6 +87,20 @@ const Sidebar = () => {
                 console.error("Error fetching admin data:", error);
             }
         };
+
+        const getOrderCount = async () => {
+            try {
+                const response = await fetch(
+                    `http://localhost:7722/order/count/notcompleted/${id}`
+                );
+                const data = await response.json();
+                setOrderCount(data.count);
+            } catch (error) {
+                console.error("Error fetching order count:", error);
+            }
+        };
+
+        getOrderCount();
 
         fetchAdmin();
     }, [id]); // Added id as a dependency
@@ -138,8 +154,15 @@ const Sidebar = () => {
                                     icon={link.icon}
                                     className="flex-shrink-0 w-5 h-5 text-white transition duration-75"
                                 />
-                                <span className="flex-1 ml-3 whitespace-nowrap">
+                                <span className="flex-1 ml-3 whitespace-nowrap flex justify-between">
                                     {link.text}
+                                    {link.text === "Orders" ? (
+                                        <span className="ml-1 text-xs font-bold rounded px-2 py-1 bg-white text-black">
+                                            {orderCount}
+                                        </span>
+                                    ) : (
+                                        ""
+                                    )}
                                 </span>
                             </Link>
                         </li>

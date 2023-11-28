@@ -10,7 +10,7 @@ app.use(cors());
 
 //routes
 
-app.use("", require("./routes/route"));
+app.use(require("./routes/route"));
 
 app.listen(7722, () => {
     console.log("Server has started on port 7722");

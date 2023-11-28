@@ -87,6 +87,7 @@ const OrderHIstory = () => {
 
     const handlePageChange = (new_page, order) => {
         setPage(new_page);
+        console.log(order);
         setSelectedOrder(order);
     };
 
@@ -321,6 +322,20 @@ const OrderHIstory = () => {
                                                 {selectedOrder.order_method}
                                             </td>
                                         </tr>
+
+                                        {/* estimated_delivery_time */}
+
+                                        <tr className="p-2">
+                                            <td className="text-base font-bold py-2">
+                                                Estimated Delivery Time:
+                                            </td>
+                                            <td className="text-base">
+                                                {selectedOrder.estimated_delivery_time
+                                                    ? selectedOrder.estimated_delivery_time
+                                                    : "Not Available"}
+                                            </td>
+                                        </tr>
+
                                         {orderItems.length > 0 &&
                                             orderItems.map((item) => (
                                                 <tr className="p-2 border border-gray-200">
