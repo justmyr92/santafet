@@ -293,6 +293,42 @@ const Cart = () => {
         }
     }, [cartDetails]);
 
+    const handleQuantityChange = (amount, cartID, index) => {
+        const newQuantities = [...quantities];
+        newQuantities[index] += amount;
+        if (newQuantities[index] < 1) {
+            // Optionally, you can prevent the quantity from going below 1
+            newQuantities[index] = 1;
+        }
+        setQuantities(newQuantities);
+        updateQuantity(cartID, newQuantities[index]);
+    };
+    const updateQuantity = async (cartID, quantity) => {
+        try {
+            const response = await fetch(
+                `http://localhost:7722/cart/update/${cartID}`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        quantity,
+                    }),
+                }
+            );
+
+            const updateCartJSON = await response.json();
+
+            if (updateCartJSON.ok) {
+                getCartDetails();
+                getTotals();
+            }
+        } catch (error) {
+            console.error("Error updating cart:", error);
+        }
+    };
+
     const handleUpdateQuantity = (e, cartID, index) => {
         e.preventDefault();
         const newQuantities = [...quantities];
@@ -457,10 +493,22 @@ const Cart = () => {
                                                 {cartDetail.foodmenucuttype}
                                             </p>
                                         </div>
-                                        <div className="col-span-1 flex flex-col justify-center">
+                                        <div className="col-span-1 flex flex-row justify-center items-center">
+                                            <button
+                                                className="bg-red-500 hover:bg-red-600 text-white h-10 w-10 p-2 flex justify-center items-center"
+                                                onClick={() =>
+                                                    handleQuantityChange(
+                                                        -1,
+                                                        cartDetail.cartid,
+                                                        index
+                                                    )
+                                                }
+                                            >
+                                                -
+                                            </button>
                                             <input
                                                 type="number"
-                                                className={`w-full border border-gray-300 px-3 py-2 rounded ${
+                                                className={`w-[4rem] border border-gray-300 px-1.5 text-base py-2 h-10 text-center ${
                                                     quantities[index] <= 0
                                                         ? "border-red-500"
                                                         : ""
@@ -475,6 +523,18 @@ const Cart = () => {
                                                 }
                                                 min="1"
                                             />
+                                            <button
+                                                className="bg-red-500 hover:bg-red-600 text-white h-10 w-10 p-2 flex justify-center items-center mr-2"
+                                                onClick={() =>
+                                                    handleQuantityChange(
+                                                        1,
+                                                        cartDetail.cartid,
+                                                        index
+                                                    )
+                                                }
+                                            >
+                                                +
+                                            </button>
                                         </div>
                                         <div className="col-span-2  flex flex-col justify-center">
                                             <p className="text-lg">

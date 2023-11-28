@@ -1,58 +1,412 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import emailjs from "@emailjs/browser";
+import Swal from "sweetalert2";
+import { Link } from "react-router-dom";
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+    const [email, setEmail] = useState("");
+    const [isVerified, setIsVerified] = useState(null);
+    const [isEmailExist, setIsEmailExist] = useState(null);
+    const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+    const [timer, setTimer] = useState(300); // 5 minutes in seconds
+    const [otp, setOtp] = useState("");
 
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
-  };
+    const [formData, setFormData] = useState({
+        to_name: "",
+        to_email: "",
+        reply_to: " ",
+        otp: "",
+    });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    const sendEmail = () => {
+        emailjs
+            .send(
+                "service_pua3st3",
+                "template_3s487ev",
+                formData,
+                "oVqRIuWL84xUEw5fd"
+            )
+            .then((response) => {
+                console.log("Email sent successfully:", response);
+            })
+            .catch((error) => {
+                console.error("Error sending email:", error);
+            });
+    };
 
-    // Display loading state
-    setLoading(true);
+    const generateOTP = () => {
+        return Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
+    };
 
-    try {
-      // TODO: Make API call to your backend for password reset
-      // Example: const response = await resetPassword(email);
+    const submitEmail = async (e) => {
+        e.preventDefault();
 
-      // Assuming the resetPassword function returns a success message
-      // You should handle different scenarios based on your backend response
-      // Example: setMessage(response.message);
-      setMessage("Password reset link sent to your email. Check your inbox.");
-    } catch (error) {
-      // Handle error
-      console.error("Password reset failed:", error);
-      setMessage("Password reset failed. Please try again.");
-    } finally {
-      // Reset loading state
-      setLoading(false);
-    }
-  };
+        const response = await fetch("http://localhost:7722/customer/email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+        });
 
-  return (
-    <div>
-      <h2>Forgot Password</h2>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Email:
-          <input
-            type="email"
-            value={email}
-            onChange={handleEmailChange}
-            required
-          />
-        </label>
-        <button type="submit" disabled={loading}>
-          {loading ? "Sending..." : "Reset Password"}
-        </button>
-      </form>
-      {message && <p>{message}</p>}
-    </div>
-  );
+        const parseRes = await response.json();
+
+        if (parseRes) {
+            setIsEmailExist(true);
+            formData.to_name = parseRes.customerfirstname;
+            formData.to_email = email;
+
+            // Generate a new OTP each time the page is 1
+            formData.otp = generateOTP();
+
+            sendEmail();
+
+            // Disable the button and start the timer
+            setIsButtonDisabled(true);
+            startTimer();
+
+            setIsVerified(null);
+
+            setPage(2);
+        } else {
+            setIsEmailExist(false);
+        }
+    };
+
+    const startTimer = () => {
+        const countdown = setInterval(() => {
+            setTimer((prevTimer) => prevTimer - 1);
+        }, 1000);
+
+        // Clear the interval when the timer reaches 0
+        setTimeout(() => {
+            clearInterval(countdown);
+            setIsButtonDisabled(false);
+            formData.otp = "";
+        }, 300000); // 5 minutes in milliseconds
+    };
+
+    useEffect(() => {
+        // Enable the button when the timer reaches 0
+        if (timer === 0) {
+            setIsButtonDisabled(false);
+        }
+    }, [timer]);
+
+    const [page, setPage] = useState(1);
+
+    useEffect(() => {
+        // Reset the timer and enable the button when the page changes back to 1
+        if (page === 1) {
+            setTimer(300);
+            setIsButtonDisabled(false);
+        }
+    }, [page]);
+
+    // Generate OTP and send email again
+    const submitOtp = async (e) => {
+        e.preventDefault();
+        try {
+            formData.otp = generateOTP();
+
+            sendEmail();
+
+            // Reset the timer to 300 before starting it again
+            setTimer(300);
+
+            // Disable the button and start the timer
+            setIsButtonDisabled(true);
+            startTimer();
+
+            setIsVerified(null);
+        } catch (err) {
+            console.log(err.message);
+        }
+    };
+
+    const verifyOtp = async (e) => {
+        e.preventDefault();
+        console.log(formData.otp.toString(), otp);
+        if (otp === formData.otp.toString()) {
+            setPage(3);
+        } else {
+            setIsVerified(false);
+        }
+    };
+
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+
+    const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState("");
+    const changePassword = async (e) => {
+        e.preventDefault();
+        try {
+            if (password !== confirmPassword) {
+                return setError("Passwords do not match");
+            } else if (
+                password.length < 8 ||
+                !password.match(
+                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/
+                )
+            ) {
+                return setError(
+                    "Password must be at least 8 characters, and contain at least 1 uppercase letter, 1 lowercase letter, 1 number"
+                );
+            }
+
+            const body = { email, password };
+            const response = await fetch(
+                "http://localhost:7722/customer/forgotpassword",
+                {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body),
+                }
+            );
+
+            const parseRes = await response.json();
+
+            if (parseRes) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Success",
+                    text: "Password changed successfully!",
+                    confirmButtonText: "Go to Login",
+                    timer: 5000,
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = "/login";
+                    }
+                });
+            }
+
+            setError("");
+
+            window.location.href = "/login";
+        } catch (err) {
+            console.log(err.message);
+        }
+    };
+
+    return (
+        <section className="login bg-blue-100 h-screen">
+            <div className="container mx-auto px-4 relative h-full">
+                <div className="flex content-center items-center justify-center h-full">
+                    <div className="w-full lg:w-4/12 px-4">
+                        <div className="relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded-lg bg-blue-200 border-0">
+                            <div className="rounded-t mb-0 px-6 py-6">
+                                <div className="text-center mb-3">
+                                    <h6 className="text-blue-600 text-sm font-bold">
+                                        Forgot Password
+                                    </h6>
+                                </div>
+                                <hr className="mt-6 border-b-1 border-blue-300" />
+                            </div>
+                            <div className="flex-auto px-4 lg:px-10 py-10 pt-0">
+                                {page === 1 && (
+                                    <form onSubmit={submitEmail}>
+                                        <div className="relative w-full mb-3">
+                                            <label
+                                                className="block uppercase text-blue-600 text-xs font-bold mb-2"
+                                                htmlFor="grid-password"
+                                            >
+                                                Email
+                                            </label>
+                                            <input
+                                                type="email"
+                                                className={`px-3 py-3 placeholder-blue-400 text-blue-700 bg-white rounded text-sm shadow focus:outline-none focus:shadow-outline w-full ${
+                                                    isEmailExist === false &&
+                                                    "border-2 border-red-500"
+                                                }`}
+                                                placeholder="Email"
+                                                style={{
+                                                    transition: "all .15s ease",
+                                                }}
+                                                onChange={(e) =>
+                                                    setEmail(e.target.value)
+                                                }
+                                                value={email}
+                                            />
+                                            <small className="text-red-500">
+                                                {isEmailExist === false &&
+                                                    "Email does not exist"}
+                                            </small>
+                                        </div>
+
+                                        <div className="text-center mt-6">
+                                            <button
+                                                className="bg-blue-600 text-white active:bg-blue-700 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 w-full"
+                                                type="submit"
+                                                disabled={isButtonDisabled}
+                                            >
+                                                Send Verification
+                                            </button>
+                                        </div>
+                                    </form>
+                                )}
+                                {page === 2 && (
+                                    <form onSubmit={verifyOtp}>
+                                        <div className="relative w-full mb-3">
+                                            <label
+                                                className="block uppercase text-blue-600 text-xs font-bold mb-2"
+                                                htmlFor="grid-password"
+                                            >
+                                                OTP
+                                            </label>
+                                            <input
+                                                type="text"
+                                                className={`px-3 py-3 placeholder-blue-400 text-blue-700 bg-white rounded text-sm shadow focus:outline-none focus:shadow-outline w-full ${
+                                                    isVerified === false &&
+                                                    "border-2 border-red-500"
+                                                }`}
+                                                placeholder="OTP"
+                                                style={{
+                                                    transition: "all .15s ease",
+                                                }}
+                                                required
+                                                onChange={(e) =>
+                                                    setOtp(e.target.value)
+                                                }
+                                                value={otp}
+                                            />
+                                            {timer !== 0 && (
+                                                <small className="text-red-500">
+                                                    OTP will expire in {timer}{" "}
+                                                    seconds
+                                                </small>
+                                            )}
+                                            {timer === 0 && (
+                                                <small className="text-red-500">
+                                                    <span
+                                                        onClick={submitOtp}
+                                                        className="text-blue-500 cursor-pointer"
+                                                    >
+                                                        Resend OTP
+                                                    </span>
+                                                </small>
+                                            )}
+                                        </div>
+                                        <button
+                                            className="bg-blue-600 text-white active:bg-blue-700 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 w-full"
+                                            type="submit"
+                                        >
+                                            Verify OTP
+                                        </button>
+                                    </form>
+                                )}
+                                {
+                                    // Page 3
+                                    page === 3 && (
+                                        <form onSubmit={changePassword}>
+                                            {error && (
+                                                <div className="text-red-500">
+                                                    {error}
+                                                </div>
+                                            )}
+                                            <div className="relative w-full mb-3">
+                                                <label
+                                                    className="block uppercase text-blue-600 text-xs font-bold mb-2"
+                                                    htmlFor="grid-password"
+                                                >
+                                                    New Password
+                                                </label>
+                                                <input
+                                                    type={
+                                                        showPassword
+                                                            ? "text"
+                                                            : "password"
+                                                    }
+                                                    className="px-3 py-3 placeholder-blue-400 text-blue-700 bg-white rounded text-sm shadow focus:outline-none focus:shadow-outline w-full"
+                                                    placeholder="New Password"
+                                                    style={{
+                                                        transition:
+                                                            "all .15s ease",
+                                                    }}
+                                                    onChange={(e) => {
+                                                        setPassword(
+                                                            e.target.value
+                                                        );
+                                                    }}
+                                                    value={password}
+                                                />
+                                            </div>
+                                            <div className="relative w-full mb-3">
+                                                <label
+                                                    className="block uppercase text-blue-600 text-xs font-bold mb-2"
+                                                    htmlFor="grid-password"
+                                                >
+                                                    Confirm Password
+                                                </label>
+                                                <input
+                                                    type={
+                                                        showPassword
+                                                            ? "text"
+                                                            : "password"
+                                                    }
+                                                    className="px-3 py-3 placeholder-blue-400 text-blue-700 bg-white rounded text-sm shadow focus:outline-none focus:shadow-outline w-full"
+                                                    placeholder="Confirm Password"
+                                                    style={{
+                                                        transition:
+                                                            "all .15s ease",
+                                                    }}
+                                                    onChange={(e) => {
+                                                        setConfirmPassword(
+                                                            e.target.value
+                                                        );
+                                                    }}
+                                                    value={confirmPassword}
+                                                />
+                                            </div>
+                                            <div className="mt-1 mb-4 flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    value={showPassword}
+                                                    onChange={() =>
+                                                        setShowPassword(
+                                                            !showPassword
+                                                        )
+                                                    }
+                                                    className="form-checkbox text-blue-600 ml-1 w-5 h-5"
+                                                />
+                                                <label
+                                                    className="text-blue-600 ml-2"
+                                                    htmlFor="grid-password"
+                                                >
+                                                    Show Password
+                                                </label>
+                                            </div>
+                                            <button
+                                                className="bg-blue-600 text-white active:bg-blue-700 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 w-full"
+                                                type="submit"
+                                            >
+                                                Change Password
+                                            </button>
+                                        </form>
+                                    )
+                                }
+                                {/* add bback button if on page 2 set to page 1 if on page 3 set to page 2 */}
+                                {/* {page === 2 && (
+                                    <button
+                                        className="bg-blue-600 text-white active:bg-blue-700 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 w-full"
+                                        onClick={() => setPage(1)}
+                                    >
+                                        Back
+                                    </button>
+                                )}
+                                {page === 3 && (
+                                    <button
+                                        className="bg-blue-600 text-white active:bg-blue-700 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 w-full"
+                                        onClick={() => setPage(2)}
+                                    >
+                                        Back
+                                    </button>
+                                )} */}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
 };
 
 export default ForgotPassword;

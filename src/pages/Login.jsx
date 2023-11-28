@@ -213,6 +213,14 @@ const Login = () => {
                             </label>
                         </div>
                     </div>
+                    <div className="mb-4">
+                        <Link
+                            className="text-blue-500 hover:text-blue-700 text-sm"
+                            to="/forgot-password"
+                        >
+                            Forgot password?
+                        </Link>
+                    </div>
                     <div>
                         <button
                             onClick={login}

@@ -1179,6 +1179,42 @@ router.get("/sales/branch", async (req, res) => {
     }
 });
 
+//fetch email from customer table
+router.post("/customer/email", async (req, res) => {
+    try {
+        const { email } = req.body;
+        const allCustomer = await pool.query(
+            "SELECT customerEmailAdress, customerFirstName FROM customerTable WHERE customerEmailAdress = $1",
+            [email]
+        );
+        res.status(200).json(allCustomer.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+    }
+});
+// const body = { email, password };
+// const response = await fetch(
+//     "http://localhost:7722/customer/forgotpassword",
+//     {
+//         method: "PATCH",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify(body),
+//     }
+// );
+
+router.patch("/customer/forgotpassword", async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const updatePassword = await pool.query(
+            "UPDATE customerTable SET customerPassword = $1 WHERE customerEmailAdress = $2",
+            [hashedPassword, email]
+        );
+        res.status(200).json("Password was updated!");
+    } catch (err) {
+        console.error(err.message);
+    }
+});
 module.exports = router;
 
 // Path: backend/routes/route.js
