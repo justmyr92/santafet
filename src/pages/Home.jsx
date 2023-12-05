@@ -19,6 +19,18 @@ const Home = () => {
         },
     ];
 
+    //check if heter # on path then go to that part of the page wit that id
+
+    useEffect(() => {
+        if (window.location.hash) {
+            const id = window.location.hash.replace("#", "");
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView();
+            }
+        }
+    }, []);
+
     return (
         <>
             <Navbar />
@@ -53,7 +65,7 @@ const Home = () => {
                     </div>
                 </div>
             </section>
-            <section className="offer-section py-5">
+            <section className="offer-section py-5" id="services">
                 <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
                     <div className="flex flex-col justify-center items-start">
                         <h1
@@ -115,12 +127,12 @@ const Home = () => {
                         <div className="flex container gap-5 justify-center">
                             <a
                                 href="#"
-                                className="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 border-6 border-yellow-500 bg-orange-300"
+                                className="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 border-6 border-yellow-500 bg-orange-300"
                             >
-                                <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex flex-col items-center">
+                                <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 flex flex-col items-center">
                                     Our History
                                 </h5>
-                                <p className="font-normal text-gray-700 dark:text-gray-400">
+                                <p className="font-normal text-gray-700">
                                     Santa Fe Taguktukan is a small food business
                                     with 5 branch over Batangas City. Founded in
                                     June 2020, our company has grown from a
@@ -133,12 +145,12 @@ const Home = () => {
                             </a>
                             <a
                                 href="about"
-                                className="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 border-6 border-yellow-500 bg-orange-300"
+                                className="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 border-6 border-yellow-500 bg-orange-300"
                             >
-                                <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex justify-center ">
+                                <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 flex justify-center ">
                                     Our Team
                                 </h5>
-                                <p className="font-normal text-gray-700 dark:text-gray-400">
+                                <p className="font-normal text-gray-700">
                                     Our dedicated team of 10 employees brings
                                     years of combined experience in customer
                                     service, marketing, and product development.
@@ -161,12 +173,12 @@ const Home = () => {
                     <div className="flex gap-5 justify-center pb-5  ">
                         <a
                             href="#"
-                            className="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 border-6 border-yellow-500 bg-orange-300"
+                            className="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 border-6 border-yellow-500 bg-orange-300"
                         >
-                            <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex flex-col items-center">
+                            <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 flex flex-col items-center">
                                 Mission
                             </h5>
-                            <p className="font-normal text-gray-700 dark:text-gray-400">
+                            <p className="font-normal text-gray-700">
                                 To Become the prominent "Lechonan" Business that
                                 provides quality products such as Lechon Manok,
                                 Liempo and its unique Chicken Sisig and Liempo
@@ -175,12 +187,12 @@ const Home = () => {
                         </a>
                         <a
                             href="#"
-                            className="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 border-6 border-yellow-500 bg-orange-300"
+                            className="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 border-6 border-yellow-500 bg-orange-300"
                         >
-                            <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex flex-col items-center">
+                            <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 flex flex-col items-center">
                                 Vision
                             </h5>
-                            <p className="font-normal text-gray-700 dark:text-gray-400">
+                            <p className="font-normal text-gray-700">
                                 Taguktukan Lechon Manok and Liempo is committed
                                 in giving and maintaining customer's
                                 satisfaction by providing quality products. The
@@ -191,12 +203,12 @@ const Home = () => {
                         </a>
                         <a
                             href="#"
-                            className="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 border-6 border-yellow-500 bg-orange-300"
+                            className="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 border-6 border-yellow-500 bg-orange-300"
                         >
-                            <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white flex flex-col items-center">
+                            <h5 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 flex flex-col items-center">
                                 Goals
                             </h5>
-                            <p className="font-normal text-gray-700 dark:text-gray-400">
+                            <p className="font-normal text-gray-700">
                                 To have a strong relationship with the
                                 consumers. To build up new partnership for the
                                 future expansion. To provide employment

@@ -1,3 +1,4 @@
+import emailjs from "@emailjs/browser";
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 
@@ -5,13 +6,14 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
     const [orderList, setOrderList] = useState([]);
     const [deliveryTime, setDeliveryTime] = useState("");
     const [address, setAddress] = useState({});
+    const [customer, setCustomer] = useState({});
 
     useState(() => {
         console.log(selectedOrder);
         const getOrderList = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/order/item/${selectedOrder.customerorderid}`,
+                    `https://santafetaguktukan.online/api/order/item/${selectedOrder.customerorderid}`,
                     {
                         method: "GET",
                         headers: {
@@ -30,7 +32,7 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
         const getAddress = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/address/${selectedOrder.customerid}`,
+                    `https://santafetaguktukan.online/api/address/${selectedOrder.customerid}`,
                     {
                         method: "GET",
                         headers: {
@@ -46,31 +48,69 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
             }
         };
 
+        const getCustomer = async () => {
+            try {
+                const response = await fetch(
+                    `https://santafetaguktukan.online/api/customer/${selectedOrder.customerid}`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+                const data = await response.json();
+                setCustomer(data);
+                console.log(data); // Log the fetched data
+            } catch (error) {
+                console.error("Error fetching order list:", error);
+            }
+        };
+
         getAddress();
 
         getOrderList();
+
+        getCustomer();
     }, []);
 
-    useEffect(() => {
-        console.log(orderList);
-    }, [orderList]);
-
     const processOrder = async () => {
+        let name = customer.customerfirstname + " " + customer.customerlastname;
+        let message = "";
         let text = "";
         let status = "";
         if (selectedOrder.customerorderstatus === "Pending") {
             text = "Yes, process it!";
             status = "Processing";
+            message = `Order #${selectedOrder.customerorderid} has been processed.`;
         } else if (
             selectedOrder.customerorderstatus === "Processing" &&
             selectedOrder.order_method === "Delivery"
         ) {
             text = "Yes, deliver it!";
             status = "Out for Delivery";
+            message = `Order #${selectedOrder.customerorderid} is out for delivery.`;
         } else {
             text = "Yes, complete it!";
             status = "Completed";
+            message = `Order #${selectedOrder.customerorderid} has been completed.\n\nThank you for choosing us!`;
         }
+
+        const formData = new FormData();
+
+        const emailData = {
+            to_name: name,
+            to_email: customer.customeremailadress,
+            message: message,
+            reply_to: " ",
+            order_id: selectedOrder.customerorderid,
+        };
+
+        formData.append("to_name", name);
+        formData.append("to_email", customer.customeremailadress);
+        formData.append("message", message);
+        formData.append("reply_to", " ");
+        formData.append("order_id", selectedOrder.customerorderid);
 
         Swal.fire({
             title: "Are you sure?",
@@ -84,7 +124,7 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
             if (result.isConfirmed) {
                 try {
                     const response = await fetch(
-                        `http://localhost:7722/order/process/${selectedOrder.customerorderid}`,
+                        `https://santafetaguktukan.online/api/order/process/${selectedOrder.customerorderid}`,
                         {
                             method: "PATCH",
                             headers: {
@@ -97,20 +137,39 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
                         }
                     );
                     const data = await response.json();
+
+                    setReload(true);
                     console.log(data); // Log the fetched data
-                    Swal.fire({
-                        title: "Processed!",
-                        text: "Order has been processed.",
-                        icon: "success",
-                        confirmButtonColor: "#10B981",
-                    });
+                    // if (response.status === 200) {
+                    //     emailjs
+                    //         .send(
+                    //             "service_pua3st3",
+                    //             "template_lg5gvru",
+                    //             emailData,
+                    //             "oVqRIuWL84xUEw5fd"
+                    //         )
+                    //         .then(
+                    //             (result) => {
+                    //                 console.log(result.text);
+
+                    //                 Swal.fire({
+                    //                     title: "Processed!",
+                    //                     text: "Order has been processed.",
+                    //                     icon: "success",
+                    //                     confirmButtonColor: "#10B981",
+                    //                 });
+                    //             },
+                    //             (error) => {
+                    //                 console.log(error.text);
+                    //             }
+                    //         );
+                    // }
                 } catch (error) {
                     console.error("Error fetching order list:", error);
                 }
             }
         });
 
-        setReload(true);
         setShowOrderDetailsModal(false);
     };
 
@@ -291,7 +350,7 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
                                         setShowOrderDetailsModal(false)
                                     }
                                 >
-                                    Decline
+                                    Cancel
                                 </button>
                             </div>
                         </>
@@ -385,7 +444,7 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
                                             setShowOrderDetailsModal(false)
                                         }
                                     >
-                                        Decline
+                                        Cancel
                                     </button>
                                 </div>
                             </>
@@ -466,7 +525,7 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
                                         setShowOrderDetailsModal(false)
                                     }
                                 >
-                                    Decline
+                                    Cancel
                                 </button>
                             </div>
                         </>

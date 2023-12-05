@@ -6,6 +6,8 @@ import { faEdit, faEye, faSquarePlus } from "@fortawesome/free-solid-svg-icons";
 import AddFoodModal from "../components/AddFoodModal";
 import UpdateFoodModal from "../components/UpdateFoodModal";
 import Available from "../components/Available";
+import { storage } from "../firebase";
+import { getDownloadURL, ref } from "firebase/storage";
 
 const Foods = () => {
     const [reload, setReload] = useState(false); // Used to reload the data table after a change has been made to the database
@@ -55,7 +57,7 @@ const Foods = () => {
             name: "Image",
             selector: (row) => (
                 <img
-                    src={`../src/assets/foods/${row.foodmenuimage}`}
+                    src={row.foodmenuimage}
                     alt={row.foodmenuname}
                     className="w-20"
                 />
@@ -96,7 +98,7 @@ const Foods = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            let apiUrl = "http://localhost:7722/food";
+            let apiUrl = "https://santafetaguktukan.online/api/food";
 
             if (search !== "") {
                 apiUrl += `/search/${search}`;
@@ -104,7 +106,20 @@ const Foods = () => {
 
             const response = await fetch(apiUrl);
             const data = await response.json();
-            setFoods(data);
+
+            const foodsWithDownloadURLs = await Promise.all(
+                data.map(async (food) => {
+                    const imageRef = ref(
+                        storage,
+                        `foods/${food.foodmenuimage}`
+                    );
+
+                    const downloadURL = await getDownloadURL(imageRef);
+                    return { ...food, foodmenuimage: downloadURL };
+                })
+            );
+
+            setFoods(foodsWithDownloadURLs);
         };
 
         fetchData();

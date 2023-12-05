@@ -19,7 +19,7 @@ const Navbar = () => {
         if (customerID !== null) {
             const getCustomer = async () => {
                 const response = await fetch(
-                    `http://localhost:7722/customer/${customerID}`
+                    `https://santafetaguktukan.online/api/customer/${customerID}`
                 );
 
                 if (response.ok) {
@@ -46,6 +46,26 @@ const Navbar = () => {
         setNavIsOpen(false);
         setIsMenuOpen(!isMenuOpen);
     };
+
+    const handleCloseMenuOnOutsideClick = (event) => {
+        // Check if the menu is open and if the click is outside the menu
+        if (isMenuOpen && !event.target.closest("#user-menu-button")) {
+            setIsMenuOpen(false);
+        }
+    };
+
+    useEffect(() => {
+        // Add a global click event listener
+        document.addEventListener("click", handleCloseMenuOnOutsideClick);
+
+        // Clean up the event listener on component unmount
+        return () => {
+            document.removeEventListener(
+                "click",
+                handleCloseMenuOnOutsideClick
+            );
+        };
+    }, [isMenuOpen]);
 
     window.addEventListener("scroll", () => {
         setIsScrolled(window.scrollY > 100);
@@ -140,7 +160,7 @@ const Navbar = () => {
                         <div className="hidden sm:ml-6 sm:block">
                             <div className="flex space-x-1">
                                 <a
-                                    href="/"
+                                    href="/#home"
                                     className={
                                         "text-white hover:bg-yellow-400 hover:text-white rounded-md px-3 py-2 text-sm font-medium transition duration-100 ease-in-out"
                                     }
@@ -163,14 +183,22 @@ const Navbar = () => {
                                 >
                                     About
                                 </a>
-                                <Link
+                                <a
+                                    href="/#services"
+                                    className={
+                                        "text-white hover:bg-yellow-400 hover:text-white rounded-md px-3 py-2 text-sm font-medium transition duration-100 ease-in-out"
+                                    }
+                                >
+                                    Services
+                                </a>
+                                <a
                                     href="/#contact"
                                     className={
                                         "text-white hover:bg-yellow-400 hover:text-white rounded-md px-3 py-2 text-sm font-medium transition duration-100 ease-in-out"
                                     }
                                 >
                                     Contact
-                                </Link>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -190,11 +218,14 @@ const Navbar = () => {
                                         <span className="sr-only">
                                             Open user menu
                                         </span>
-                                        <FontAwesomeIcon
-                                            icon={faUser}
-                                            size="lg"
-                                            className="text-white"
-                                        />
+                                        <div className="flex items-center justify-center text-white gap-2 px-3 py-2">
+                                            <FontAwesomeIcon
+                                                icon={faUser}
+                                                size="lg"
+                                                className="text-white"
+                                            />
+                                            {customer.customerfirstname}
+                                        </div>
                                     </button>
                                 </div>
                                 <div
@@ -213,9 +244,27 @@ const Navbar = () => {
                                         tabIndex="-1"
                                         id="user-menu-item-1"
                                     >
-                                        {customer.customerfirstname}{" "}
-                                        {customer.customerlastname}
+                                        Profile
                                     </Link>
+                                    <Link
+                                        to="/orderhistory"
+                                        className="block px-4 py-2 text-sm text-gray-700"
+                                        role="menuitem"
+                                        tabIndex="-1"
+                                        id="user-menu-item-1"
+                                    >
+                                        Order History
+                                    </Link>
+                                    <Link
+                                        to="/addressbook"
+                                        className="block px-4 py-2 text-sm text-gray-700"
+                                        role="menuitem"
+                                        tabIndex="-1"
+                                        id="user-menu-item-1"
+                                    >
+                                        Address Book
+                                    </Link>
+                                    <hr />
                                     <p
                                         className="block px-4 py-2 text-sm text-gray-700"
                                         role="menuitem"

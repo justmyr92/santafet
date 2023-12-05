@@ -8,6 +8,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Swal from "sweetalert2";
 import { Link } from "react-router-dom";
+//import firebase from "../firebase";
+import { storage } from "../firebase";
+import { getDownloadURL, ref } from "firebase/storage";
 
 const Cart = () => {
     const [checkedProducts, setCheckedProducts] = useState([]);
@@ -27,7 +30,7 @@ const Cart = () => {
         setLoading(true);
         try {
             const response = await fetch(
-                `http://localhost:7722/cart/inner/${ID}`,
+                `https://santafetaguktukan.online/api/cart/inner/${ID}`,
                 {
                     method: "GET",
                     headers: {
@@ -36,7 +39,22 @@ const Cart = () => {
                 }
             );
             const cartDetailsJSON = await response.json();
-            setCartDetails(cartDetailsJSON);
+            // setCartDetails(cartDetailsJSON);
+            console.log(cartDetailsJSON, "cartDetailsJSON");
+            // Get download URL from firebase storage
+            const cartDetailsWithDownloadURL = await Promise.all(
+                cartDetailsJSON.map(async (cartDetail) => {
+                    const downloadURL = await getDownloadURL(
+                        ref(storage, `foods/${cartDetail.foodmenuimage}`)
+                    );
+                    return {
+                        ...cartDetail,
+                        foodmenuimage: downloadURL,
+                    };
+                })
+            );
+
+            setCartDetails(cartDetailsWithDownloadURL);
         } finally {
             setLoading(false);
         }
@@ -55,7 +73,7 @@ const Cart = () => {
             if (result.isConfirmed) {
                 try {
                     const response = await fetch(
-                        `http://localhost:7722/cart/delete/item/${cartID}`,
+                        `https://santafetaguktukan.online/api/cart/delete/item/${cartID}`,
                         {
                             method: "DELETE",
                             headers: {
@@ -114,7 +132,7 @@ const Cart = () => {
     const getAddresses = async () => {
         try {
             const response = await fetch(
-                `http://localhost:7722/address/${ID}`,
+                `https://santafetaguktukan.online/api/address/${ID}`,
                 {
                     method: "GET",
                     headers: {
@@ -132,14 +150,23 @@ const Cart = () => {
 
     const getBranches = async () => {
         try {
-            const response = await fetch(`http://localhost:7722/branch`, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
+            const response = await fetch(
+                `https://santafetaguktukan.online/api/branch`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
             const branchJSON = await response.json();
-            setBranch(branchJSON);
+
+            setBranch(
+                branchJSON.filter(
+                    (branch) =>
+                        branch.is_active.toString().toLowerCase() === "active"
+                )
+            );
             console.log(branchJSON);
         } catch (error) {
             console.error("Error getting branch:", error);
@@ -161,7 +188,7 @@ const Cart = () => {
                     const customerorderid =
                         Math.floor(Math.random() * 999999) + 100000;
                     const response = await fetch(
-                        `http://localhost:7722/order/add`,
+                        `https://santafetaguktukan.online/api/order/add`,
                         {
                             method: "POST",
                             headers: {
@@ -189,7 +216,7 @@ const Cart = () => {
                             if (checkedProducts.includes(cartDetail.cartid)) {
                                 try {
                                     const response = await fetch(
-                                        `http://localhost:7722/order/item/add`,
+                                        `https://santafetaguktukan.online/api/order/item/add`,
                                         {
                                             method: "POST",
                                             headers: {
@@ -219,7 +246,7 @@ const Cart = () => {
                                     if (response.ok) {
                                         try {
                                             const response = await fetch(
-                                                `http://localhost:7722/cart/delete/item/${cartDetail.cartid}`,
+                                                `https://santafetaguktukan.online/api/cart/delete/item/${cartDetail.cartid}`,
                                                 {
                                                     method: "DELETE",
                                                     headers: {
@@ -306,7 +333,7 @@ const Cart = () => {
     const updateQuantity = async (cartID, quantity) => {
         try {
             const response = await fetch(
-                `http://localhost:7722/cart/update/${cartID}`,
+                `https://santafetaguktukan.online/api/cart/update/${cartID}`,
                 {
                     method: "PATCH",
                     headers: {
@@ -337,7 +364,7 @@ const Cart = () => {
         const UpdateQuantity = async (cartID) => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/cart/update/${cartID}`,
+                    `https://santafetaguktukan.online/api/cart/update/${cartID}`,
                     {
                         method: "PATCH",
                         headers: {
@@ -388,7 +415,7 @@ const Cart = () => {
             if (result.isConfirmed) {
                 try {
                     const response = await fetch(
-                        `http://localhost:7722/cart/delete/all/${ID}`,
+                        `https://santafetaguktukan.online/api/cart/delete/all/${ID}`,
                         {
                             method: "DELETE",
                             headers: {
@@ -480,7 +507,7 @@ const Cart = () => {
                                         </div>
                                         <div className="col-span-2 flex items-center">
                                             <img
-                                                src={`../src/assets/foods/${cartDetail.foodmenuimage}`}
+                                                src={cartDetail.foodmenuimage}
                                                 alt="product"
                                                 className="w-24 h-24 object-cover rounded"
                                             />

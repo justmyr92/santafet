@@ -8,10 +8,23 @@ import {
     faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import AddressModal from "../components/AddressModal";
+import { storage } from "../firebase";
+import { getDownloadURL, ref } from "firebase/storage";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Swal from "sweetalert2";
+
+export const NoProductsFound = () => {
+    return (
+        <div className="flex flex-col justify-center items-center h-full border border-gray-300 p-4 rounded-lg">
+            <p className="text-2xl font-bold text-red-500">No products found</p>
+            <p className="text-sm text-gray-500">
+                Please try another search keyword
+            </p>
+        </div>
+    );
+};
 
 const Menu = () => {
     const [foods, setFoods] = useState([]);
@@ -58,43 +71,51 @@ const Menu = () => {
             let dataFood = []; // Declare dataFood here
 
             try {
-                const responseFood = await fetch("http://localhost:7722/food");
+                const responseFood = await fetch(
+                    "https://santafetaguktukan.online/api/food"
+                );
                 dataFood = await responseFood.json();
-                setFoods(dataFood);
+
+                const foodsWithDownloadURLs = await Promise.all(
+                    dataFood.map(async (food) => {
+                        const imageRef = ref(
+                            storage,
+                            `foods/${food.foodmenuimage}`
+                        );
+
+                        const downloadURL = await getDownloadURL(imageRef);
+                        return { ...food, foodmenuimage: downloadURL };
+                    })
+                );
+
+                setFoods(foodsWithDownloadURLs);
 
                 const responseFoodPrice = await fetch(
-                    "http://localhost:7722/food/price"
+                    "https://santafetaguktukan.online/api/food/price"
                 );
                 const dataFoodPrice = await responseFoodPrice.json();
 
                 const responseRider = await fetch(
-                    "http://localhost:7722/rider"
+                    "https://santafetaguktukan.online/api/rider"
                 );
                 const dataRider = await responseRider.json();
                 setRider(dataRider);
 
-                const responseBranchLocation = await fetch(
-                    "http://localhost:7722/branch"
-                );
-                const dataBranchLocation = await responseBranchLocation.json();
-                setBranchLocation(dataBranchLocation);
-                console.log(dataBranchLocation);
-
-                setFoods(dataFood);
                 setFoodPrices(dataFoodPrice);
 
                 setBranchSelectKey((prevKey) => prevKey + 1); // Increment the key
 
                 if (localStorage.getItem("userID") !== null) {
                     const responseCart = await fetch(
-                        "http://localhost:7722/cart/" +
+                        "https://santafetaguktukan.online/api/cart/" +
                             localStorage.getItem("userID")
                     );
                     const dataCart = await responseCart.json();
                     setCart(dataCart);
 
                     const responseAddresses = await fetch(
-                        "http://localhost:7722/address/" + customerID
+                        "https://santafetaguktukan.online/api/address/" +
+                            customerID
                     );
                     const dataAddresses = await responseAddresses.json();
                     setAddress(dataAddresses);
@@ -109,14 +130,15 @@ const Menu = () => {
                     }
 
                     const responseFavoriteFoods = await fetch(
-                        "http://localhost:7722/order/most/" + customerID
+                        "https://santafetaguktukan.online/api/order/most/" +
+                            customerID
                     );
 
                     const dataFavoriteFoods =
                         await responseFavoriteFoods.json();
 
                     const responseBestSeller = await fetch(
-                        "http://localhost:7722/order/best"
+                        "https://santafetaguktukan.online/api/order/best"
                     );
                     const dataBestSeller = await responseBestSeller.json();
                     setBestSeller(dataBestSeller);
@@ -130,12 +152,34 @@ const Menu = () => {
         };
 
         fetchData();
-    }, [customerID, filterKeyword]);
+        setReload(false);
+    }, [customerID, filterKeyword, reload, selectedBranch]);
+
+    useEffect(() => {
+        const fetchBranchLocation = async () => {
+            const responseBranchLocation = await fetch(
+                "https://santafetaguktukan.online/api/branch"
+            );
+            const dataBranchLocation = await responseBranchLocation.json();
+            const filteredBranchLocation = dataBranchLocation.filter(
+                (branch) => branch.is_active.toString() === "active"
+            );
+            // setBranchLocation(dataBranchLocation);
+            // setSelectedBranch(dataBranchLocation[0].branchid);
+            // setNearestBranch(dataBranchLocation[0].branchid);
+            setBranchLocation(filteredBranchLocation);
+            setSelectedBranch(filteredBranchLocation[0].branchid);
+            setNearestBranch(filteredBranchLocation[0].branchid);
+            console.log(dataBranchLocation);
+        };
+        fetchBranchLocation();
+    }, []);
 
     const deleteFromCart = async (cartID) => {
         try {
             const response = await fetch(
-                "http://localhost:7722/cart/delete/item/" + cartID,
+                "https://santafetaguktukan.online/api/cart/delete/item/" +
+                    cartID,
                 {
                     method: "DELETE",
                 }
@@ -184,8 +228,10 @@ const Menu = () => {
             }
         });
 
-        setNearestBranch(nearestBranchID);
-        setSelectedBranch(nearestBranchID);
+        if (nearestBranchID === null) {
+            setNearestBranch(nearestBranchID);
+            setSelectedBranch(nearestBranchID);
+        }
     };
 
     useEffect(() => {
@@ -199,11 +245,12 @@ const Menu = () => {
             );
         }
     }, [selectedAddress]);
+
     useEffect(() => {
         const fetchAvailableData = async (branchID) => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/availability/branch/${branchID}`
+                    `https://santafetaguktukan.online/api/availability/branch/${branchID}`
                 );
 
                 const data = await response.json();
@@ -217,6 +264,19 @@ const Menu = () => {
         };
 
         fetchAvailableData(selectedBranch);
+
+        console.log(selectedBranch + "b");
+
+        //filter price by branch
+
+        console.log(foodPrices, "Asdashahahd");
+
+        console.log(
+            foodPrices.filter(
+                (price) => price.branchid.toString() === selectedBranch
+            ),
+            "Asdashahahdasdasdasdasdasd"
+        );
     }, [selectedBranch]);
 
     const handleBranchChange = (e) => {
@@ -284,7 +344,7 @@ const Menu = () => {
             console.log(order);
             try {
                 const response = await fetch(
-                    "http://localhost:7722/order/add",
+                    "https://santafetaguktukan.online/api/order/add",
                     {
                         method: "POST",
                         headers: {
@@ -316,7 +376,7 @@ const Menu = () => {
                         console.log(orderItem);
                         try {
                             const response = await fetch(
-                                "http://localhost:7722/order/item/add",
+                                "https://santafetaguktukan.online/api/order/item/add",
                                 {
                                     method: "POST",
                                     headers: {
@@ -338,7 +398,7 @@ const Menu = () => {
 
                     try {
                         const responseDeleteCart = await fetch(
-                            "http://localhost:7722/customer/cart/delete/" +
+                            "https://santafetaguktukan.online/api/customer/cart/delete/" +
                                 customerID,
                             {
                                 method: "DELETE",
@@ -380,8 +440,10 @@ const Menu = () => {
                     showModal={foodModal}
                     setShowModal={setFoodModal}
                     selectedFood={selectedFood}
+                    selectedBranch={selectedBranch}
                     foodPrices={foodPrices}
                     available={selectedAvailable}
+                    setReload={setReload}
                 />
             ) : null}
             {addressModal ? (
@@ -399,7 +461,9 @@ const Menu = () => {
                     <div className="flex flex-row h-full">
                         <div className="food-menu-container h-full w-[64%] p-4 overflow-y-auto">
                             {/* Banner */}
-                            <div className="santa-fe-banner bg-gray-200 h-[12rem]"></div>
+                            <div className="santa-fe-banner bg-gray-200">
+                                <img src="../src/assets/img/menubg.png" />
+                            </div>
                             {/* Search Bar */}
                             <div className="search-container mt-4">
                                 <form>
@@ -517,7 +581,9 @@ const Menu = () => {
                                                               >
                                                                   <div className="food-menu-image-container h-[12rem]">
                                                                       <img
-                                                                          src={`../src/assets/foods/${food.foodmenuimage}`}
+                                                                          src={
+                                                                              food.foodmenuimage
+                                                                          }
                                                                           alt={
                                                                               food.foodmenuname
                                                                           }
@@ -564,7 +630,9 @@ const Menu = () => {
                                                                                       price
                                                                                   ) =>
                                                                                       price.foodmenuid ===
-                                                                                      food.foodmenuid
+                                                                                          food.foodmenuid &&
+                                                                                      price.branchid ===
+                                                                                          selectedBranch
                                                                               )
                                                                               .map(
                                                                                   (
@@ -641,11 +709,13 @@ const Menu = () => {
                                                               >
                                                                   <div className="food-menu-image-container h-[12rem]">
                                                                       <img
-                                                                          src={`../src/assets/foods/${food.foodmenuimage}`}
+                                                                          src={
+                                                                              food.foodmenuimage
+                                                                          }
                                                                           alt={
                                                                               food.foodmenuname
                                                                           }
-                                                                          className="object-cover w-full h-full rounded-t-lg"
+                                                                          className="obj    ect-cover w-full h-full rounded-t-lg"
                                                                       />
                                                                   </div>
                                                                   <div className="food-menu-info-container p-4">
@@ -769,7 +839,9 @@ const Menu = () => {
                                                           >
                                                               <div className="food-menu-image-container h-[12rem]">
                                                                   <img
-                                                                      src={`../src/assets/foods/${food.foodmenuimage}`}
+                                                                      src={
+                                                                          food.foodmenuimage
+                                                                      }
                                                                       alt={
                                                                           food.foodmenuname
                                                                       }
@@ -816,7 +888,9 @@ const Menu = () => {
                                                                                   price
                                                                               ) =>
                                                                                   price.foodmenuid ===
-                                                                                  food.foodmenuid
+                                                                                      food.foodmenuid &&
+                                                                                  price.branchid ===
+                                                                                      selectedBranch
                                                                           )
                                                                           .map(
                                                                               (
@@ -848,6 +922,23 @@ const Menu = () => {
                                                 : null}
                                         </ul>
                                     </>
+                                ) : null}
+
+                                {filterKeyword === "All" &&
+                                foods.filter(
+                                    (food) =>
+                                        food.foodmenuname
+                                            .toLowerCase()
+                                            .includes(
+                                                searchKeyword.toLowerCase()
+                                            ) ||
+                                        food.foodmenucategory
+                                            .toLowerCase()
+                                            .includes(
+                                                searchKeyword.toLowerCase()
+                                            )
+                                ).length === 0 ? (
+                                    <NoProductsFound />
                                 ) : null}
                             </div>
                         </div>

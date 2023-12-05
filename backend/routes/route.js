@@ -25,19 +25,15 @@ const upload = multer({ storage: storage });
 // });
 
 //add food item
-router.post("/food/add", upload.single("foodMenuImage"), async (req, res) => {
+router.post("/food/add", async (req, res) => {
     try {
         const {
             foodMenuID,
             foodMenuName,
             foodMenuDescription,
             foodMenuCategory,
+            foodMenuImage,
         } = req.body;
-
-        console.log(req.body);
-        console.log(req.file);
-        const foodMenuImage = req.file.filename;
-        console.log(foodMenuImage);
 
         const newFood = await pool.query(
             "INSERT INTO foodMenuTable (foodMenuID, foodMenuName, foodMenuDescription, foodMenuCategory, foodMenuImage) VALUES($1, $2, $3, $4, $5) RETURNING *",
@@ -58,7 +54,8 @@ router.post("/food/add", upload.single("foodMenuImage"), async (req, res) => {
 
 router.post("/food/price/add", async (req, res) => {
     try {
-        const { foodMenuID, foodMenuPrice, foodMenuCutType } = req.body;
+        const { foodMenuID, foodMenuPrice, foodMenuCutType, branchID } =
+            req.body;
 
         let foodPriceID =
             "SFMP" + Math.floor(Math.random() * 99999999) + 10000000;
@@ -66,8 +63,8 @@ router.post("/food/price/add", async (req, res) => {
         console.log(req.body);
 
         const newFoodPrice = await pool.query(
-            "INSERT INTO foodMenuPriceTable (foodMenuPriceID, foodMenuID, foodMenuPrice, foodMenuCutType) VALUES($1, $2, $3, $4) RETURNING *",
-            [foodPriceID, foodMenuID, foodMenuPrice, foodMenuCutType]
+            "INSERT INTO foodMenuPriceTable (foodMenuPriceID, foodMenuID, foodMenuPrice, foodMenuCutType, branchID) VALUES($1, $2, $3, $4, $5) RETURNING *",
+            [foodPriceID, foodMenuID, foodMenuPrice, foodMenuCutType, branchID]
         );
 
         console.log("Tangina", req.body);
@@ -128,12 +125,12 @@ router.get("/food/:id", async (req, res) => {
 });
 
 //select foodmenuprices by foodmenuid
-router.get("/food/price/:id", async (req, res) => {
+router.get("/food/price/:id/:bid", async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id, bid } = req.params;
         const allFoodPrice = await pool.query(
-            "SELECT * FROM foodMenuPriceTable WHERE foodMenuID = $1",
-            [id]
+            "SELECT * FROM foodMenuPriceTable WHERE foodMenuID = $1 AND branchID = $2",
+            [id, bid]
         );
         res.json(allFoodPrice.rows);
     } catch (err) {
@@ -447,7 +444,7 @@ router.get("/address/:id", async (req, res) => {
             "SELECT * FROM customerAddressTable WHERE customerID = $1",
             [id]
         );
-        res.json(allAddress.rows);
+        res.json(allAddress.rows[0]);
     } catch (err) {
         console.error(err.message);
     }
@@ -548,6 +545,10 @@ router.post("/admin/login", async (req, res) => {
         console.log(adminPassword, user.rows[0].adminpassword);
         if (!matched) {
             return res.status(401).json({ message: "Invalid credentials" });
+        }
+        console.log(user.rows[0].is_active);
+        if (user.rows[0].is_active === "inactive") {
+            return res.status(401).json({ message: "Account is not active" });
         }
 
         res.json(user.rows[0]);
@@ -704,12 +705,41 @@ router.get("/customer/search/:search", async (req, res) => {
 router.patch("/food/update/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        const { foodMenuName, foodMenuDescription, foodMenuCategory } =
-            req.body;
-        const updateFood = await pool.query(
-            "UPDATE foodMenuTable SET foodMenuName = $1, foodMenuDescription = $2, foodMenuCategory = $3 WHERE foodMenuID = $4",
-            [foodMenuName, foodMenuDescription, foodMenuCategory, id]
-        );
+        // else {
+        //     updatedFoodData = {
+        //         foodmenuname: foodName,
+        //         foodmenudescription: foodMenuDescription,
+        //         foodmenucategory: foodMenuCategory,
+        //         foodmenuimage: "",
+        //     };
+        // }
+        const {
+            foodmenuname,
+            foodmenudescription,
+            foodmenucategory,
+            foodmenuimage,
+        } = req.body;
+
+        let sql = "";
+        let values = [];
+
+        if (foodmenuimage === "") {
+            sql =
+                "UPDATE foodMenuTable SET foodMenuName = $1, foodMenuDescription = $2, foodMenuCategory = $3 WHERE foodMenuID = $4";
+            values = [foodmenuname, foodmenudescription, foodmenucategory, id];
+        } else {
+            sql =
+                "UPDATE foodMenuTable SET foodMenuName = $1, foodMenuDescription = $2, foodMenuCategory = $3, foodMenuImage = $4 WHERE foodMenuID = $5";
+            values = [
+                foodmenuname,
+                foodmenudescription,
+                foodmenucategory,
+                foodmenuimage,
+                id,
+            ];
+        }
+
+        const updateFood = await pool.query(sql, values);
         res.json("Food was updated!");
     } catch (err) {
         console.error(err.message);
@@ -729,6 +759,54 @@ router.get("/branch", async (req, res) => {
     try {
         const allBranch = await pool.query("SELECT * FROM branchTable");
         res.json(allBranch.rows);
+    } catch (err) {
+        console.error(err.message);
+    }
+});
+
+router.patch("/address/update", async (req, res) => {
+    // {
+    //     "customeraddressid": "SFMA5238548110000000",
+    //     "customerid": "C56463520",
+    //     "customerfullname": "Justmyr Gutierrez",
+    //     "customercontactnumber": "09063488667",
+    //     "customerstreet": "Sitio 7",
+    //     "customerbarangay": "Balete Relocation Site",
+    //     "customercity": "Batangas City",
+    //     "customernotes": "3",
+    //     "customeraddresslabel": "work",
+    //     "customeraddressdefault": true,
+    //     "addresslatitude": "13.81907555",
+    //     "addresslongitude": "121.06428337048469"
+    // }
+
+    try {
+        const {
+            customeraddressid,
+            customerid,
+            customerfullname,
+            customercontactnumber,
+            customerstreet,
+            customerbarangay,
+            customercity,
+            customernotes,
+            customeraddresslabel,
+            customeraddressdefault,
+            addresslatitude,
+            addresslongitude,
+        } = req.body;
+        const updateAddress = await pool.query(
+            //update only barangay, city, notes, label no need to update default
+            "UPDATE customerAddressTable SET customerstreet = $1, customerbarangay = $2, customercity = $3, customernotes = $4 WHERE customerAddressID = $5",
+            [
+                customerstreet,
+                customerbarangay,
+                customercity,
+                customernotes,
+                customeraddressid,
+            ]
+        );
+        res.json("Address was updated!");
     } catch (err) {
         console.error(err.message);
     }
@@ -1017,6 +1095,7 @@ router.post("/admins", async (req, res) => {
         admincontactnumber,
         userroleid,
         branchid,
+        is_active,
     } = req.body;
 
     // Hash the password with bcrypt
@@ -1024,7 +1103,7 @@ router.post("/admins", async (req, res) => {
 
     try {
         const result = await pool.query(
-            "INSERT INTO admintable (adminid, adminfirstname, adminlastname, adminemailaddress, adminpassword, admincontactnumber, userroleid, branchid) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *",
+            "INSERT INTO admintable (adminid, adminfirstname, adminlastname, adminemailaddress, adminpassword, admincontactnumber, userroleid, branchid , is_active) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *",
             [
                 adminid,
                 adminfirstname,
@@ -1034,6 +1113,7 @@ router.post("/admins", async (req, res) => {
                 admincontactnumber,
                 userroleid,
                 branchid,
+                is_active,
             ]
         );
 
@@ -1135,7 +1215,7 @@ router.get("/transaction_sum/:month", async (req, res) => {
         const year = new Date().getFullYear();
         const { month } = req.params;
         const result = await pool.query(
-            "SELECT SUM(customerordertotalprice) FROM customerordertable WHERE EXTRACT(MONTH FROM customerorderdate) = $1 AND EXTRACT(YEAR FROM customerorderdate) = $2",
+            "SELECT SUM(customerordertotalprice) FROM customerordertable WHERE EXTRACT(MONTH FROM customerorderdate) = $1 AND EXTRACT(YEAR FROM customerorderdate) = $2 AND customerorderstatus = 'Completed'",
 
             [month, year]
         );
@@ -1179,6 +1259,79 @@ router.get("/sales/branch", async (req, res) => {
     }
 });
 
+//patch branch by name and address
+router.patch("/branch/update", async (req, res) => {
+    try {
+        const { branchid, branchname, branchlocationaddress, is_active } =
+            req.body;
+        const updateBranch = await pool.query(
+            "UPDATE branchTable SET branchName = $1, branchlocationaddress = $2, is_active = $3 WHERE branchID = $4",
+            [branchname, branchlocationaddress, is_active, branchid]
+        );
+        res.json(updateBranch.rows);
+    } catch (err) {
+        console.error(err.message);
+    }
+});
+
+// const handleUpdateSubmit = async (e) => {
+//     e.preventDefault();
+//     try {
+//         const response = await fetch(
+//             `https://santafetaguktukan.online/api/admin/`, // Assuming there's a route to update a specific admin by ID
+//             {
+//                 method: "PATCH", // Use the appropriate HTTP method for updating
+//                 headers: {
+//                     "Content-Type": "application/json",
+//                 },
+//                 body: JSON.stringify(updateAdmin),
+//             }
+//         );
+//         const data = await response.json();
+//         console.log("Admin updated:", data);
+
+//         setReload(true);
+//     } catch (error) {
+//         console.error("Error updating admin:", error);
+//     }
+
+//     setShowEditAdminModal(false);
+// };
+
+router.patch("/admin", async (req, res) => {
+    try {
+        // adminid: row.adminid,
+        //         adminfirstname: row.adminfirstname,
+        //         adminlastname: row.adminlastname,
+        //         adminemailaddress: row.adminemailaddress,
+        //         adminpassword: row.adminpassword,
+        //         admincontactnumber: row.admincontactnumber,
+
+        const {
+            adminid,
+            adminfirstname,
+            adminlastname,
+            adminemailaddress,
+            admincontactnumber,
+            is_active,
+        } = req.body;
+        const updateAdmin = await pool.query(
+            "UPDATE adminTable SET adminfirstname = $1, adminlastname = $2, adminemailaddress = $3, admincontactnumber = $4 , is_active = $5 WHERE adminid = $6 returning *",
+            [
+                adminfirstname,
+                adminlastname,
+                adminemailaddress,
+                admincontactnumber,
+                is_active,
+                adminid,
+            ]
+        );
+        res.json(updateAdmin.rows);
+    } catch (err) {
+        console.error(err.message);
+    }
+});
+
 //fetch email from customer table
 router.post("/customer/email", async (req, res) => {
     try {
@@ -1194,7 +1347,7 @@ router.post("/customer/email", async (req, res) => {
 });
 // const body = { email, password };
 // const response = await fetch(
-//     "http://localhost:7722/customer/forgotpassword",
+//     "https://santafetaguktukan.online/api/customer/forgotpassword",
 //     {
 //         method: "PATCH",
 //         headers: { "Content-Type": "application/json" },
@@ -1215,6 +1368,21 @@ router.patch("/customer/forgotpassword", async (req, res) => {
         console.error(err.message);
     }
 });
+
+//delete admin
+router.delete("/admin/delete/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deleteAdmin = await pool.query(
+            "DELETE FROM adminTable WHERE adminID = $1",
+            [id]
+        );
+        res.json("Admin was deleted!");
+    } catch (err) {
+        console.error(err.message);
+    }
+});
+
 module.exports = router;
 
 // Path: backend/routes/route.js

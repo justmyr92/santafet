@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
+import { storage } from "../firebase";
+import { getDownloadURL, ref } from "firebase/storage";
 const FoodModal = ({
     showModal,
     setShowModal,
     selectedFood,
+    selectedBranch,
     foodPrices,
     available,
+    setReload,
 }) => {
     const [customerID, setCustomerID] = useState(
         localStorage.getItem("userID")
@@ -13,11 +17,38 @@ const FoodModal = ({
     const [foodMenuID, setFoodMenuID] = useState();
     const [foodMenuPriceID, setFoodMenuPriceID] = useState(""); // "FP8
     const [quantity, setQuantity] = useState(1);
+    const [foodImage, setFoodImage] = useState("");
 
     const [foods, setFoods] = useState([]);
 
-    const addToCart = async () => {
+    useEffect(() => {
+        const getPicture = async () => {
+            try {
+                const storageRef = ref(storage, selectedFood.foodmenuimage);
+                const picture = await getDownloadURL(storageRef);
+                setFoodImage(picture);
+            } catch (error) {
+                console.error(error.message);
+            }
+        };
+
+        getPicture();
+    }, []);
+
+    const addToCart = async (e) => {
+        e.preventDefault();
         console.log(available);
+
+        if (available?.toLowerCase() === "unavailable") {
+            Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "This item is unavailable!",
+                timer: 1500,
+            });
+            return;
+        }
+
         try {
             //if customerID is null, redirect to login
             console.log(customerID);
@@ -57,13 +88,16 @@ const FoodModal = ({
             });
 
             if (confirmed.isConfirmed) {
-                const response = await fetch("http://localhost:7722/cart/add", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(newCart),
-                });
+                const response = await fetch(
+                    "https://santafetaguktukan.online/api/cart/add",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(newCart),
+                    }
+                );
 
                 if (!response.ok) {
                     throw new Error("Failed to add item to cart");
@@ -71,6 +105,7 @@ const FoodModal = ({
 
                 const data = await response.json();
                 console.log(data);
+                setReload(true);
                 setShowModal(!showModal);
 
                 Swal.fire({
@@ -79,8 +114,6 @@ const FoodModal = ({
                     showConfirmButton: false,
                     timer: 1500,
                 });
-
-                window.location.reload();
             }
         } catch (error) {
             console.error(error.message);
@@ -98,7 +131,7 @@ const FoodModal = ({
         const getFoodPrices = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/food/price`,
+                    `https://santafetaguktukan.online/api/food/price`,
                     {
                         method: "GET",
                         headers: {
@@ -122,7 +155,7 @@ const FoodModal = ({
             id="foodModal"
             tabIndex="-1"
             aria-hidden={showModal ? "true" : "false"}
-            className={`fixed transform top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl p-4 overflow-x-hidden overflow-y-auto ${
+            className={`fixed transform top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl p-4 overflow-x-hidden overflow-y-auto z-[100] ${
                 showModal ? "block" : "hidden"
             }`}
         >
@@ -156,11 +189,12 @@ const FoodModal = ({
                             <span className="sr-only">Close modal</span>
                         </button>
                     </div>
-                    <div className="p-6 space-y-2 overflow-y-auto h-96">
+                    <div className="p-6 space-y-2 overflow-y-auto h-80">
                         <div className="img-wrapper">
                             <img
-                                src={`../src/assets/foods/${selectedFood.foodmenuimage}`}
+                                src={selectedFood.foodmenuimage}
                                 alt={selectedFood.foodmenuname}
+                                className="w-[90%] h-[90%] mx-auto object-cover rounded-lg"
                             />
                         </div>
                         <div className="food-info">
@@ -185,7 +219,9 @@ const FoodModal = ({
                                 {/* filter foodPrices by foodMenuID */}
                                 {foodPrices.map(
                                     (foodPrice) =>
-                                        foodPrice.foodmenuid === foodMenuID && (
+                                        foodPrice.foodmenuid === foodMenuID &&
+                                        foodPrice.branchid ===
+                                            selectedBranch && (
                                             <option
                                                 key={foodPrice.foodmenupriceid}
                                                 value={
@@ -217,8 +253,7 @@ const FoodModal = ({
                             data-modal-hide="foodModal"
                             type="button"
                             className="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 rounded-lg text-sm font-medium px-5 py-2.5 hover:text-white focus:z-10"
-                            onClick={() => addToCart()}
-                            disabled={available === "Unavailable"}
+                            onClick={(e) => addToCart(e)}
                         >
                             Add to cart
                         </button>
@@ -228,7 +263,7 @@ const FoodModal = ({
                             className="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10"
                             onClick={() => setShowModal(!showModal)}
                         >
-                            Decline
+                            Cancel
                         </button>
                     </div>
                 </div>

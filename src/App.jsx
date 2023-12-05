@@ -15,6 +15,7 @@ import Branch from "./pages/Branch";
 import Admin from "./pages/Admin";
 import OrderHIstory from "./pages/OrderHIstory";
 import ForgotPassword from "./pages/ForgotPassword";
+import AddressBooks from "./pages/AddressBooks";
 
 function App() {
     return (
@@ -38,6 +39,7 @@ function App() {
                     <Route path="/branch" element={<Branch />} />
                     <Route path="/admin" element={<Admin />} />
                     <Route path="/orderhistory" element={<OrderHIstory />} />
+                    <Route path="/addressbook" element={<AddressBooks />} />
                     <Route
                         path="/forgot-password"
                         element={<ForgotPassword />}

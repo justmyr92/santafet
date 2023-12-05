@@ -203,7 +203,7 @@ const Registration = () => {
             };
 
             const customerResponse = await fetch(
-                "http://localhost:7722/customer/register",
+                "https://santafetaguktukan.online/api/customer/register",
                 {
                     method: "POST",
                     headers: {
@@ -232,7 +232,7 @@ const Registration = () => {
             };
 
             const addressResponse = await fetch(
-                "http://localhost:7722/address/add",
+                "https://santafetaguktukan.online/api/address/add",
                 {
                     method: "POST",
                     headers: {
@@ -278,6 +278,9 @@ const Registration = () => {
                 <form
                     className="registration-form bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-lg"
                     onSubmit={register}
+                    style={{
+                        boxShadow: "3px 3px 0 #facc15",
+                    }}
                 >
                     <div className="logo flex items-center justify-center">
                         <img src={logo} alt="logo" className="w-32 mb-4" />
@@ -286,7 +289,7 @@ const Registration = () => {
                         <h4 className="text-2xl font-bold mb-1 text-red-500">
                             Registration
                         </h4>
-                        <p className="text-base text-gray-500">
+                        <p className="text-sm text-gray-500">
                             Already have an account?{" "}
                             <Link
                                 className="text-blue-500 hover:text-blue-700"

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import logo from "../assets/logo.png";
 import Swal from "sweetalert2";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
@@ -30,7 +31,7 @@ const Login = () => {
             };
 
             const customerResponse = await fetch(
-                "http://localhost:7722/customer/login",
+                "https://santafetaguktukan.online/api/customer/login",
                 {
                     method: "POST",
                     headers: {
@@ -47,10 +48,10 @@ const Login = () => {
                 localStorage.setItem("userRoleID", customerData.userroleid);
 
                 Swal.fire({
-                    icon: "success",
-                    title: "Logged in!",
+                    icon: "Login successful!",
+                    title: "Redirecting...",
                     showConfirmButton: false,
-                    timer: 1500,
+                    timer: 3000,
                 });
 
                 navigate("/menu");
@@ -62,7 +63,7 @@ const Login = () => {
                 };
 
                 const adminResponse = await fetch(
-                    "http://localhost:7722/admin/login",
+                    "https://santafetaguktukan.online/api/admin/login",
                     {
                         method: "POST",
                         headers: {
@@ -95,7 +96,7 @@ const Login = () => {
                     };
 
                     const superadminResponse = await fetch(
-                        "http://localhost:7722/superadmin/login",
+                        "https://santafetaguktukan.online/api/superadmin/login",
                         {
                             method: "POST",
                             headers: {
@@ -145,11 +146,21 @@ const Login = () => {
     };
 
     return (
-        <section className="login bg-blue-100">
+        <section className="login bg-red-400">
             <div className="container mx-auto px-4 min-h-screen relative">
-                <form className="login-form bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
+                <form
+                    className="login-form bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md"
+                    style={{
+                        boxShadow: "3px 3px 0 #facc15",
+                    }}
+                >
+                    <div className="logo flex items-center justify-center">
+                        <img src={logo} alt="logo" className="w-32 mb-4" />
+                    </div>{" "}
                     <div className="mb-4">
-                        <h4 className="text-2xl font-bold mb-1">Login</h4>
+                        <h4 className="text-2xl font-bold mb-1 text-red-500">
+                            Login
+                        </h4>
                         <p className="text-sm text-gray-500 mb-4">
                             Don't have an account?{" "}
                             <Link
@@ -181,7 +192,7 @@ const Login = () => {
                             required
                         />
                     </div>
-                    <div className="mb-4">
+                    <div className="mb-1">
                         <label
                             for="password"
                             className="block text-sm font-medium text-gray-700 mb-1"
@@ -225,7 +236,7 @@ const Login = () => {
                         <button
                             onClick={login}
                             type="button"
-                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
+                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-full"
                         >
                             Login
                         </button>

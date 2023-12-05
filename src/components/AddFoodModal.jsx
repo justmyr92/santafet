@@ -1,6 +1,9 @@
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../firebase";
 import React, { useEffect, useState } from "react";
+import { v4 } from "uuid";
 const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
     const [foodName, setFoodName] = useState("");
     const [foodMenuDescription, setFoodMenuDescription] = useState("");
@@ -52,7 +55,7 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
         const getBranchID = async () => {
             try {
                 const response = await fetch(
-                    "http://localhost:7722/branch/ids"
+                    "https://santafetaguktukan.online/api/branch/ids"
                 );
                 const jsonData = await response.json();
                 setBranchID(jsonData);
@@ -63,7 +66,6 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
         getBranchID();
     }, []);
 
-    // const handleSubmit = (e) => {
     //     e.preventDefault();
 
     //     const id = Math.floor(Math.random() * 90000) + 10000;
@@ -74,7 +76,7 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
     //     formData.append("foodMenuDescription", foodMenuDescription);
     //     formData.append("foodMenuCategory", foodMenuCategory);
 
-    //     const response = fetch("http://localhost:7722/food/add", {
+    //     const response = fetch("https://santafetaguktukan.online/api/food/add", {
     //         method: "POST",
 
     //         body: formData,
@@ -87,7 +89,7 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
     //             foodMenuPrice: price.foodMenuPrice,
     //             foodMenuCutType: price.foodMenuCutType,
     //         };
-    //         const response = fetch("http://localhost:7722/foodprice/add", {
+    //         const response = fetch("https://santafetaguktukan.online/api/foodprice/add", {
     //             method: "POST",
     //             headers: {
     //                 "Content-Type": "application/json",
@@ -106,7 +108,7 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
     //             foodMenuID: id.toString(),
     //             available: "Available",
     //         };
-    //         const response = fetch("http://localhost:7722/availability/add", {
+    //         const response = fetch("https://santafetaguktukan.online/api/availability/add", {
     //             method: "POST",
     //             headers: {
     //                 "Content-Type": "application/json",
@@ -124,45 +126,76 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
         e.preventDefault();
 
         const id = Math.floor(Math.random() * 90000) + 10000;
-        const formData = new FormData();
-        formData.append("foodMenuID", id);
-        formData.append("foodMenuImage", foodMenuImage);
-        formData.append("foodMenuName", foodName);
-        formData.append("foodMenuDescription", foodMenuDescription);
-        formData.append("foodMenuCategory", foodMenuCategory);
+        // const formData = new FormData();
+        // formData.append("foodMenuID", id);
+        // formData.append("foodMenuImage", foodMenuImage);
+        // formData.append("foodMenuName", foodName);
+        // formData.append("foodMenuDescription", foodMenuDescription);
+        // formData.append("foodMenuCategory", foodMenuCategory);
+
+        let new_food_name = foodMenuImage.name + v4();
+
+        // const {
+        //     foodMenuID,
+        //     foodMenuName,
+        //     foodMenuDescription,
+        //     foodMenuCategory,
+        //     foodMenuImage,
+        // } = req.body;
+
+        const new_food = {
+            foodMenuID: id,
+            foodMenuName: foodName,
+            foodMenuDescription: foodMenuDescription,
+            foodMenuCategory: foodMenuCategory,
+            foodMenuImage: new_food_name,
+        };
 
         try {
             const setFood = async () => {
-                const response = await fetch("http://localhost:7722/food/add", {
-                    method: "POST",
-                    body: formData,
-                });
+                const response = await fetch(
+                    "https://santafetaguktukan.online/api/food/add",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(new_food),
+                    }
+                );
                 console.log(response);
 
                 if (response.ok) {
                     console.log("Food added");
 
-                    // Use Promise.all to wait for all asynchronous operations to complete
+                    const imageRef = ref(storage, `foods/${new_food_name}`);
 
-                    menuPrices.map(async (price) => {
-                        let priceData = {
-                            foodMenuID: id,
-                            foodMenuPrice: price.foodMenuPrice,
-                            foodMenuCutType: price.foodMenuCutType,
-                        };
+                    uploadBytes(imageRef, foodMenuImage).then(() => {
+                        console.log("Image uploaded");
+                    });
 
-                        console.log("Price data", priceData);
+                    menuPrices.map(async (price, index) => {
+                        branchID.map(async (branch) => {
+                            let priceData = {
+                                foodMenuID: id,
+                                foodMenuPrice: price.foodMenuPrice,
+                                foodMenuCutType: price.foodMenuCutType,
+                                branchID: branch.branchid,
+                            };
 
-                        const priceResponse = await fetch(
-                            "http://localhost:7722/food/price/add",
-                            {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                },
-                                body: JSON.stringify(priceData),
-                            }
-                        );
+                            console.log("Price data", priceData);
+
+                            const priceResponse = await fetch(
+                                "https://santafetaguktukan.online/api/food/price/add",
+                                {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify(priceData),
+                                }
+                            );
+                        });
 
                         console.log(priceResponse);
                         console.log("Price added");
@@ -180,7 +213,7 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
                         };
 
                         const availabilityResponse = await fetch(
-                            "http://localhost:7722/availability/add",
+                            "https://santafetaguktukan.online/api/availability/add",
                             {
                                 method: "POST",
                                 headers: {
@@ -384,7 +417,7 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
                                 className="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10"
                                 onClick={() => setShowModal(false)}
                             >
-                                Decline
+                                Cancel
                             </button>
                         </div>
                     </div>

@@ -22,48 +22,47 @@ const Orders = () => {
     const [admin, setAdmin] = useState([]);
     const [reload, setReload] = useState(false);
 
-    useEffect(() => {
-        const adminFetch = async () => {
-            const response = await fetch(`http://localhost:7722/admin/${id}`);
-            const data = await response.json();
-            setAdmin(data);
-        };
-        adminFetch();
-        console.log(admin);
-    }, []);
-
     const [orders, setOrders] = useState([]);
-
     useEffect(() => {
-        console.log("Admin Branch ID:", admin.branchid);
+        console.log(reload);
+        const fetchData = async () => {
+            try {
+                const adminResponse = await fetch(
+                    `https://santafetaguktukan.online/api/admin/${id}`
+                );
+                const adminData = await adminResponse.json();
+                setAdmin(adminData);
 
-        const getOrders = async () => {
-            if (!admin.branchid) {
-                return;
-            }
+                const adminBranchId = adminData.branchid;
 
-            const response = await fetch(
-                `http://localhost:7722/orders/${admin.branchid}`,
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
+                if (adminBranchId) {
+                    const ordersResponse = await fetch(
+                        `https://santafetaguktukan.online/api/orders/${adminBranchId}`,
+                        {
+                            method: "GET",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                        }
+                    );
+
+                    const ordersData = await ordersResponse.json();
+                    console.log("Orders Data:", ordersData);
+
+                    const sortedOrders = ordersData.sort((a, b) =>
+                        a.customerorderstatus < b.customerorderstatus ? 1 : -1
+                    );
+
+                    setOrders(sortedOrders);
+                    setReload(false); // Set reload to false after fetching orders
                 }
-            );
-
-            const data = await response.json();
-            console.log("Orders Data:", data);
-            //sort the data asc customerorderstatus
-            const new_data = data.sort((a, b) =>
-                a.customerorderstatus < b.customerorderstatus ? 1 : -1
-            );
-            setOrders(new_data);
-            setReload(false);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
         };
 
-        getOrders();
-    }, [admin, reload]);
+        fetchData();
+    }, [reload]); // Add id as a dependency if it's used in the fetch URL
 
     const [showOrderDetailsModal, setShowOrderDetailsModal] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState({});

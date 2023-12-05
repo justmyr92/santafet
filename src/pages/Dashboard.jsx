@@ -10,6 +10,9 @@ import {
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
 import Sidebar from "../components/Sidebar";
+import { Link } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 
 ChartJS.register(
     CategoryScale,
@@ -50,7 +53,7 @@ const Dashboard = () => {
         const fetchBranchRanking = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/sales/branch`
+                    `https://santafetaguktukan.online/api/sales/branch`
                 );
                 const data = await response.json();
                 console.log(data);
@@ -67,7 +70,7 @@ const Dashboard = () => {
         const fetchAdmin = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/admin/${id}`
+                    `https://santafetaguktukan.online/api/admin/${id}`
                 );
                 const data = await response.json();
                 setAdmin(data);
@@ -108,7 +111,7 @@ const Dashboard = () => {
         const getCustomerCount = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/customer/count/`
+                    `https://santafetaguktukan.online/api/customer/count/`
                 );
                 const jsonData = await response.json();
                 setCustomerCount(jsonData.count);
@@ -121,7 +124,7 @@ const Dashboard = () => {
         const getOrderCount = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/order/count/${admin.branchid}`
+                    `https://santafetaguktukan.online/api/order/count/${admin.branchid}`
                 );
 
                 const jsonData = await response.json();
@@ -136,7 +139,7 @@ const Dashboard = () => {
         const getProductCount = async () => {
             try {
                 const response = await fetch(
-                    "http://localhost:7722/product/count"
+                    "https://santafetaguktukan.online/api/product/count"
                 );
 
                 const jsonData = await response.json();
@@ -151,7 +154,7 @@ const Dashboard = () => {
         const getSaleCount = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/order/success/${admin.branchid}`
+                    `https://santafetaguktukan.online/api/order/success/${admin.branchid}`
                 );
 
                 const jsonData = await response.json();
@@ -164,7 +167,7 @@ const Dashboard = () => {
         const fetchMonthlyProfit = async (month) => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/transaction_sum/${month}`
+                    `https://santafetaguktukan.online/api/transaction_sum/${month}`
                 );
 
                 if (!response.ok) {
@@ -172,7 +175,7 @@ const Dashboard = () => {
                 }
 
                 const data = await response.json();
-                console.log(data.sum, "sum");
+                console.log(data.sum, month);
                 return data.sum;
             } catch (error) {
                 console.error(`Error fetching profits for ${month}:`, error);
@@ -213,32 +216,12 @@ const Dashboard = () => {
             } finally {
                 setLoadingProfits(false);
                 setMonthlyProfits(updatedProfits);
+                console.log(updatedProfits);
             }
         };
 
         updateMonthlyProfits();
     }, [admin.branchid]); // Added admin.branchid as a dependency
-
-    const labels = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-    ];
-
-    const data = {
-        labels,
-        datasets: [
-            {
-                label: "Dataset 1",
-                data: [1092, 744, 924, 934, 1290, 1330, 1320],
-                backgroundColor: "rgba(255, 99, 132, 0.5)",
-            },
-        ],
-    };
 
     return (
         <section className="section">
@@ -248,42 +231,81 @@ const Dashboard = () => {
                     <div className="grid grid-cols-4 gap-4">
                         <div className="card bg-gradient-to-r from-slate-100 to-blue-100 p-4 rounded-lg shadow">
                             <div className="card-body">
-                                <h2 className="card-title text-xl font-bold text-gray-800">
+                                <h2 className="card-title text-lg font-medium text-gray-800">
                                     Customers
                                 </h2>
                                 <p className="card-text text-3xl font-bold text-gray-800">
                                     {customerCount}
                                 </p>
+                                <hr className="my-2 border-gray-900" />
+                                <Link
+                                    to="/customer"
+                                    className="text-blue-600 hover:text-blue-800 text-sm"
+                                >
+                                    {" "}
+                                    View Customers{" "}
+                                    <FontAwesomeIcon icon={faArrowRight} />{" "}
+                                </Link>
                             </div>
                         </div>
                         <div className="card bg-gradient-to-r from-slate-100 to-blue-100 p-4 rounded-lg shadow">
                             <div className="card-body">
-                                <h2 className="card-title text-xl font-bold text-gray-800">
+                                <h2 className="card-title text-lg font-medium text-gray-800">
                                     Orders
                                 </h2>
                                 <p className="card-text text-3xl font-bold text-gray-800">
                                     {orderCount}
                                 </p>
+                                <hr className="my-2 border-gray-900" />
+                                <Link
+                                    to="/order"
+                                    className="text-blue-600 hover:text-blue-800 text-sm"
+                                >
+                                    {" "}
+                                    View Orders{" "}
+                                    <FontAwesomeIcon icon={faArrowRight} />{" "}
+                                </Link>
                             </div>
                         </div>
                         <div className="card bg-gradient-to-r from-slate-100 to-blue-100 p-4 rounded-lg shadow">
                             <div className="card-body">
-                                <h2 className="card-title text-xl font-bold text-gray-800">
+                                <h2 className="card-title text-lg font-medium text-gray-800">
                                     Products
                                 </h2>
                                 <p className="card-text text-3xl font-bold text-gray-800">
                                     {productCount}
                                 </p>
+                                <hr className="my-2 border-gray-900" />
+                                <Link
+                                    to="/food"
+                                    className="text-blue-600 hover:text-blue-800 text-sm"
+                                >
+                                    {" "}
+                                    View Products{" "}
+                                    <FontAwesomeIcon icon={faArrowRight} />{" "}
+                                </Link>
                             </div>
                         </div>
                         <div className="card bg-gradient-to-r from-slate-100 to-blue-100 p-4 rounded-lg shadow">
                             <div className="card-body">
-                                <h2 className="card-title text-xl font-bold text-gray-800">
+                                <h2 className="card-title text-lg font-medium text-gray-800">
                                     Sales
                                 </h2>
                                 <p className="card-text text-3xl font-bold text-gray-800">
-                                    {saleCount}
+                                    {/* {saleCount ? saleCount.toFixed(2) : 0} */}
+                                    {saleCount > 0
+                                        ? parseFloat(saleCount).toFixed(2)
+                                        : 0}
                                 </p>
+                                <hr className="my-2 border-gray-900" />
+                                <Link
+                                    to="/order"
+                                    className="text-blue-600 hover:text-blue-800 text-sm"
+                                >
+                                    {" "}
+                                    View Sales{" "}
+                                    <FontAwesomeIcon icon={faArrowRight} />{" "}
+                                </Link>
                             </div>
                         </div>
                     </div>
@@ -293,8 +315,11 @@ const Dashboard = () => {
                         </div>
                         <div className="table-container">
                             <table className="min-w-full bg-white border border-gray-300 rounded-lg overflow-hidden">
-                                <thead className="bg-gray-200 text-gray-700">
+                                <thead className="bg-red-500 text-white">
                                     <tr>
+                                        <th className="py-2 px-4 text-left font-semibold text-sm">
+                                            #
+                                        </th>
                                         <th className="py-2 px-4 text-left font-semibold text-sm">
                                             Branch Name
                                         </th>
@@ -307,15 +332,21 @@ const Dashboard = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="text-gray-600">
-                                    {branchRanking.map((item) => (
-                                        <tr key={item.branchname}>
-                                            <td className="py-2 px-4">
+                                    {branchRanking.map((item, index) => (
+                                        <tr
+                                            key={item.branchname}
+                                            className={`hover:bg-gray-200 transition ease-in-out duration-150`}
+                                        >
+                                            <td className="py-2 px-4 text-sm">
+                                                {index + 1}
+                                            </td>
+                                            <td className="py-2 px-4 text-sm">
                                                 {item.branchname}
                                             </td>
-                                            <td className="py-2 px-4">
+                                            <td className="py-2 px-4 text-sm">
                                                 {item.totalsales}
                                             </td>
-                                            <td className="py-2 px-4">
+                                            <td className="py-2 px-4 text-sm">
                                                 {item.ordercount}
                                             </td>
                                         </tr>

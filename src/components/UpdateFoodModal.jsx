@@ -1,6 +1,9 @@
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useState } from "react";
+import { storage } from "../firebase";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { v4 } from "uuid";
 
 const UpdateFoodModal = ({ showModal, setShowModal, foodData, setReload }) => {
     console.log(foodData);
@@ -9,22 +12,12 @@ const UpdateFoodModal = ({ showModal, setShowModal, foodData, setReload }) => {
     const [foodMenuDescription, setFoodMenuDescription] = useState(
         foodData.foodmenudescription
     );
+    const [newImage, setNewImage] = useState("");
     const [foodMenuCategory, setFoodMenuCategory] = useState(
         foodData.foodmenucategory
     );
     const [foodMenuImage, setFoodMenuImage] = useState(foodData.foodmenuimage);
 
-    // app.get("/food/price:/id", async (req, res) => {
-    //     try {
-    //         const { id } = req.params;
-    //         const allFoodPrice = await pool.query(
-    //             "SELECT * FROM foodMenuPriceTable WHERE foodMenuID = $1"
-    //         );
-    //         res.json(allFoodPrice.rows);
-    //     } catch (err) {
-    //         console.error(err.message);
-    //     }
-    // });
     console.log("data: " + foodMenuID);
     const [foodPrice, setFoodPrice] = useState([]);
     const [newFoodPrice, setNewFoodPrice] = useState([]);
@@ -33,9 +26,10 @@ const UpdateFoodModal = ({ showModal, setShowModal, foodData, setReload }) => {
         const getFoodPrice = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/food/price/${foodData.foodmenuid}`
+                    `https://santafetaguktukan.online/api/food/price/${foodData.foodmenuid}`
                 );
                 const jsonData = await response.json();
+
                 setFoodPrice(jsonData);
             } catch (err) {
                 console.error(err.message);
@@ -50,14 +44,28 @@ const UpdateFoodModal = ({ showModal, setShowModal, foodData, setReload }) => {
     }, [newFoodPrice]);
 
     const handleSubmit = async () => {
-        const updatedFoodData = {
-            foodMenuName: foodName,
-            foodMenuDescription: foodMenuDescription,
-            foodMenuCategory: foodMenuCategory,
-        };
-
+        let new_image;
+        let updatedFoodData = {};
+        if (newImage) {
+            new_image = newImage.name + v4();
+            const storageRef = ref(storage, `foods/${new_image}`);
+            uploadBytes(storageRef, newImage);
+            updatedFoodData = {
+                foodmenuname: foodName,
+                foodmenudescription: foodMenuDescription,
+                foodmenucategory: foodMenuCategory,
+                foodmenuimage: new_image,
+            };
+        } else {
+            updatedFoodData = {
+                foodmenuname: foodName,
+                foodmenudescription: foodMenuDescription,
+                foodmenucategory: foodMenuCategory,
+                foodmenuimage: "",
+            };
+        }
         const response = await fetch(
-            `http://localhost:7722/food/update/${foodMenuID}`,
+            `https://santafetaguktukan.online/api/food/update/${foodMenuID}`,
             {
                 method: "PATCH",
                 headers: {
@@ -67,45 +75,8 @@ const UpdateFoodModal = ({ showModal, setShowModal, foodData, setReload }) => {
             }
         );
 
-        if (response.status === 200) {
-            try {
-                // Use Promise.all to wait for all requests to complete
-                await Promise.all(
-                    foodPrice.map(async (price) => {
-                        const updatedPriceData = {
-                            foodMenuPrice: price.foodmenuprice,
-                        };
-
-                        const priceResponse = await fetch(
-                            `http://localhost:7722/food/price/update/${price.foodmenupriceid}`,
-                            {
-                                method: "PATCH",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                },
-                                body: JSON.stringify(updatedPriceData),
-                            }
-                        );
-
-                        if (priceResponse.status !== 200) {
-                            // Handle error for individual price update
-                            console.error(
-                                `Failed to update price for ID ${price.foodmenuid}`
-                            );
-                        }
-                    })
-                );
-
-                console.log("Food and prices updated successfully");
-                setReload(true);
-                setShowModal(false);
-            } catch (error) {
-                // Handle errors that occur during the entire process
-                console.error("Error updating food and prices:", error.message);
-            }
-        } else {
-            console.error("Failed to update food");
-        }
+        setReload(true);
+        setShowModal(false);
     };
 
     return (
@@ -179,7 +150,17 @@ const UpdateFoodModal = ({ showModal, setShowModal, foodData, setReload }) => {
                                 setFoodMenuCategory(e.target.value)
                             }
                         />
-                        <div className="grid grid-cols-2 gap-4">
+                        {/* image */}
+                        <label htmlFor="foodMenuImage">Image</label>
+                        <input
+                            type="file"
+                            name="foodMenuImage"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none"
+                            onChange={(e) => setNewImage(e.target.files[0])}
+                        />
+                        <img src={foodMenuImage} alt="food" className="w-1/4" />
+
+                        {/* <div className="grid grid-cols-2 gap-4">
                             {foodPrice.map((price, index) => (
                                 <div
                                     key={index}
@@ -205,7 +186,7 @@ const UpdateFoodModal = ({ showModal, setShowModal, foodData, setReload }) => {
                                     />
                                 </div>
                             ))}
-                        </div>
+                        </div> */}
                     </div>
 
                     <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
@@ -222,7 +203,7 @@ const UpdateFoodModal = ({ showModal, setShowModal, foodData, setReload }) => {
                             className="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10"
                             onClick={() => setShowModal(false)}
                         >
-                            Decline
+                            Cancel
                         </button>
                     </div>
                 </div>

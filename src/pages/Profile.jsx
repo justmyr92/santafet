@@ -21,7 +21,7 @@ const Profile = () => {
         const getCustomer = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/customer/${customerID}`,
+                    `https://santafetaguktukan.online/api/customer/${customerID}`,
                     {
                         method: "GET",
                         headers: {
@@ -70,13 +70,16 @@ const Profile = () => {
 
     const handleSaveClick = async () => {
         try {
-            await fetch(`http://localhost:7722/customer/update/${customerID}`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(editedCustomer),
-            });
+            await fetch(
+                `https://santafetaguktukan.online/api/customer/update/${customerID}`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(editedCustomer),
+                }
+            );
             setEditing(false);
             window.location.reload();
         } catch (err) {

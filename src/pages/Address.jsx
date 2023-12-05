@@ -65,13 +65,16 @@ const Address = ({}) => {
         });
 
         if (confirmed.isConfirmed) {
-            const response = await fetch("http://localhost:7722/address/add", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(newAddress),
-            });
+            const response = await fetch(
+                "https://santafetaguktukan.online/api/address/add",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(newAddress),
+                }
+            );
 
             if (!response.ok) {
                 throw new Error("Failed to add address");
