@@ -60,6 +60,7 @@ const OrderHIstory = () => {
             );
             const data = await response.json();
             setOrders(data);
+            console.log(data);
         };
         fetchAddress();
         fetchOrders();

@@ -105,7 +105,6 @@ const FoodModal = ({
 
                 const data = await response.json();
                 console.log(data);
-                setReload(true);
                 setShowModal(!showModal);
 
                 Swal.fire({
@@ -123,6 +122,8 @@ const FoodModal = ({
                 text: "Something went wrong!",
             });
         }
+
+        setReload(true);
     };
 
     useEffect(() => {

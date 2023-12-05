@@ -48,10 +48,10 @@ const Login = () => {
                 localStorage.setItem("userRoleID", customerData.userroleid);
 
                 Swal.fire({
-                    icon: "Login successful!",
-                    title: "Redirecting...",
+                    icon: "success",
+                    title: "Logged in!",
                     showConfirmButton: false,
-                    timer: 3000,
+                    timer: 1500,
                 });
 
                 navigate("/menu");
@@ -176,7 +176,7 @@ const Login = () => {
                             for="contact_number"
                             className="block text-sm font-medium text-gray-700 mb-1"
                         >
-                            Contact Number
+                            Contact or Email Address
                         </label>
                         <input
                             type="text"

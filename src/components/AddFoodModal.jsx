@@ -227,11 +227,12 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
                         console.log("Availability added");
                     });
                 }
+
+                setReload(true);
+                setShowModal(false);
             };
 
             setFood();
-            setReload(true);
-            setShowModal(false);
         } catch (error) {
             console.error("Error adding food:", error);
             // Handle error, show a message to the user, or log it as needed

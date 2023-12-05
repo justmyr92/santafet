@@ -141,7 +141,7 @@ const Cart = () => {
                 }
             );
             const addressJSON = await response.json();
-            setAddress(addressJSON[0]);
+            setAddress(addressJSON);
             console.log(addressJSON);
         } catch (error) {
             console.error("Error getting address:", error);
@@ -284,7 +284,7 @@ const Cart = () => {
                         text: "Order placed successfully.",
                     }).then(() => {
                         // After the alert is closed, navigate to another page
-                        window.location.href = "/menu";
+                        window.location.href = "/orderhistory";
                     });
 
                     console.log(orderJSON);
@@ -750,17 +750,17 @@ const Cart = () => {
                                     <div className="border border-gray-300 rounded p-4 w-full">
                                         <div className="flex flex-col justify-center">
                                             <p className="text-base font-bold">
-                                                {address.customerfullname}
+                                                {address?.customerfullname}
                                             </p>
                                         </div>
                                         <div className="flex flex-col justify-center gap-1">
                                             <p className="text-sm text-gray-500">
-                                                {address.customerstreet},{" "}
-                                                {address.customerbarangay},{" "}
-                                                {address.customercity}
+                                                {address?.customerstreet},{" "}
+                                                {address?.customerbarangay},{" "}
+                                                {address?.customercity}
                                             </p>
                                             <p className="text-sm text-red-500">
-                                                {address.customercontactnumber}
+                                                {address?.customercontactnumber}
                                             </p>
                                         </div>
                                     </div>
@@ -811,7 +811,7 @@ const Cart = () => {
                                                     e.target.value
                                                 )
                                             }
-                                            defaultValue={branch[4].branchid} // Set defaultValue here
+                                            value={selectedBranch}
                                         >
                                             {branch.map((branch, index) => (
                                                 <option

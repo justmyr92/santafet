@@ -14,14 +14,13 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Swal from "sweetalert2";
+import BG from "../assets/img/menubg.png";
 
-export const NoProductsFound = () => {
+export const NoProductsFound = ({ text }) => {
     return (
         <div className="flex flex-col justify-center items-center h-full border border-gray-300 p-4 rounded-lg">
             <p className="text-2xl font-bold text-red-500">No products found</p>
-            <p className="text-sm text-gray-500">
-                Please try another search keyword
-            </p>
+            <p className="text-sm text-gray-500">{text}</p>
         </div>
     );
 };
@@ -119,15 +118,11 @@ const Menu = () => {
                     );
                     const dataAddresses = await responseAddresses.json();
                     setAddress(dataAddresses);
-
-                    const defaultAddress = dataAddresses.find(
-                        (address) => address.customeraddressdefault === true
-                    );
-                    if (defaultAddress) {
-                        setSelectedAddress(defaultAddress);
-                    } else {
-                        setSelectedAddress(dataAddresses[0]);
-                    }
+                    console.log("dataAddresses:", dataAddresses, "asdasdasd");
+                    // const defaultAddress = dataAddresses.find(
+                    //     (address) => address.customeraddressdefault === true
+                    // );
+                    setSelectedAddress(dataAddresses);
 
                     const responseFavoriteFoods = await fetch(
                         "https://santafetaguktukan.online/api/order/most/" +
@@ -137,15 +132,16 @@ const Menu = () => {
                     const dataFavoriteFoods =
                         await responseFavoriteFoods.json();
 
-                    const responseBestSeller = await fetch(
-                        "https://santafetaguktukan.online/api/order/best"
-                    );
-                    const dataBestSeller = await responseBestSeller.json();
-                    setBestSeller(dataBestSeller);
-                    console.log(dataBestSeller);
-
+                    console.log(dataFavoriteFoods, "test2   ");
                     setFavoriteFoods(dataFavoriteFoods);
                 }
+
+                const responseBestSeller = await fetch(
+                    "https://santafetaguktukan.online/api/order/best"
+                );
+                const dataBestSeller = await responseBestSeller.json();
+                setBestSeller(dataBestSeller);
+                console.log(dataBestSeller, "test");
             } catch (error) {
                 console.error(error);
             }
@@ -462,7 +458,7 @@ const Menu = () => {
                         <div className="food-menu-container h-full w-[64%] p-4 overflow-y-auto">
                             {/* Banner */}
                             <div className="santa-fe-banner bg-gray-200">
-                                <img src="../src/assets/img/menubg.png" />
+                                <img src={BG} alt="Santa Fe Banner" />
                             </div>
                             {/* Search Bar */}
                             <div className="search-container mt-4">
@@ -540,131 +536,143 @@ const Menu = () => {
                                             {/* map foods and for each foodmenuid in foodfavorites, display foodmenuid */}
                                             {foods &&
                                             foodPrices &&
-                                            favoriteFoods.length > 0
-                                                ? foods.map((food) => {
-                                                      const matchingFavorite =
-                                                          favoriteFoods.find(
-                                                              (favorite) =>
-                                                                  favorite.foodmenuid ===
-                                                                  food.foodmenuid
-                                                          );
+                                            favoriteFoods.length > 0 ? (
+                                                foods.map((food) => {
+                                                    const matchingFavorite =
+                                                        favoriteFoods.find(
+                                                            (favorite) =>
+                                                                favorite.foodmenuid ===
+                                                                food.foodmenuid
+                                                        );
 
-                                                      if (matchingFavorite) {
-                                                          return (
-                                                              <li
-                                                                  key={
-                                                                      food.foodmenuid
-                                                                  }
-                                                                  className="food-menu-item rounded-lg"
-                                                                  data-modal-target="foodModal"
-                                                                  data-modal-toggle="foodModal"
-                                                                  onClick={() => {
-                                                                      setSelectedFood(
-                                                                          food
-                                                                      );
-                                                                      setSelectedAvailable(
-                                                                          available.find(
-                                                                              (
-                                                                                  avail
-                                                                              ) =>
-                                                                                  avail.foodmenuid ===
-                                                                                  food.foodmenuid
-                                                                          )
-                                                                              ?.available ||
-                                                                              "DefaultUnavailableValue"
-                                                                      );
+                                                    if (matchingFavorite) {
+                                                        return (
+                                                            <li
+                                                                key={
+                                                                    food.foodmenuid
+                                                                }
+                                                                className="food-menu-item rounded-lg"
+                                                                data-modal-target="foodModal"
+                                                                data-modal-toggle="foodModal"
+                                                                onClick={() => {
+                                                                    setSelectedFood(
+                                                                        food
+                                                                    );
+                                                                    setSelectedAvailable(
+                                                                        available.find(
+                                                                            (
+                                                                                avail
+                                                                            ) =>
+                                                                                avail.foodmenuid ===
+                                                                                food.foodmenuid
+                                                                        )
+                                                                            ?.available ||
+                                                                            "DefaultUnavailableValue"
+                                                                    );
 
-                                                                      setFoodModal(
-                                                                          true
-                                                                      );
-                                                                  }}
-                                                              >
-                                                                  <div className="food-menu-image-container h-[12rem]">
-                                                                      <img
-                                                                          src={
-                                                                              food.foodmenuimage
-                                                                          }
-                                                                          alt={
-                                                                              food.foodmenuname
-                                                                          }
-                                                                          className="object-cover w-full h-full rounded-t-lg"
-                                                                      />
-                                                                  </div>
-                                                                  <div className="food-menu-info-container p-4">
-                                                                      <div className="food-menu-name-container flex flex-row justify-between items-center">
-                                                                          <h3 className="text-lg font-medium text-gray-900">
-                                                                              {
-                                                                                  food.foodmenuname
-                                                                              }
-                                                                          </h3>
-                                                                          {available.find(
-                                                                              (
-                                                                                  avail
-                                                                              ) =>
-                                                                                  avail.foodmenuid ===
-                                                                                  food.foodmenuid
-                                                                          )
-                                                                              .available ===
-                                                                          "Available" ? (
-                                                                              <p className="text-sm text-green-500">
-                                                                                  Available
-                                                                              </p>
-                                                                          ) : (
-                                                                              <p className="text-sm text-red-500">
-                                                                                  Not
-                                                                                  Available
-                                                                              </p>
-                                                                          )}
-                                                                      </div>
-                                                                      <div className="food-menu-description-container">
-                                                                          <p className="text-sm text-gray-500">
-                                                                              {
-                                                                                  food.foodmenudescription
-                                                                              }
-                                                                          </p>
-                                                                      </div>
-                                                                      <div className="food-menu-price-container">
-                                                                          {foodPrices
-                                                                              .filter(
-                                                                                  (
-                                                                                      price
-                                                                                  ) =>
-                                                                                      price.foodmenuid ===
-                                                                                          food.foodmenuid &&
-                                                                                      price.branchid ===
-                                                                                          selectedBranch
-                                                                              )
-                                                                              .map(
-                                                                                  (
-                                                                                      price
-                                                                                  ) => (
-                                                                                      <div
-                                                                                          key={
-                                                                                              price.foodmenupriceid
-                                                                                          }
-                                                                                      >
-                                                                                          <p className="text-sm text-gray-500">
-                                                                                              Php{" "}
-                                                                                              {
-                                                                                                  price.foodmenuprice
-                                                                                              }{" "}
-                                                                                              /{" "}
-                                                                                              {
-                                                                                                  price.foodmenucuttype
-                                                                                              }
-                                                                                          </p>
-                                                                                      </div>
-                                                                                  )
-                                                                              )}
-                                                                      </div>
-                                                                  </div>
-                                                              </li>
-                                                          );
-                                                      } else {
-                                                          return null;
-                                                      }
-                                                  })
-                                                : null}
+                                                                    setFoodModal(
+                                                                        true
+                                                                    );
+                                                                }}
+                                                            >
+                                                                <div className="food-menu-image-container h-[12rem]">
+                                                                    <img
+                                                                        src={
+                                                                            food.foodmenuimage
+                                                                        }
+                                                                        alt={
+                                                                            food.foodmenuname
+                                                                        }
+                                                                        className="object-cover w-full h-full rounded-t-lg"
+                                                                    />
+                                                                </div>
+                                                                <div className="food-menu-info-container p-4">
+                                                                    <div className="food-menu-name-container flex flex-row justify-between items-center">
+                                                                        <h3 className="text-lg font-medium text-gray-900">
+                                                                            {
+                                                                                food.foodmenuname
+                                                                            }
+                                                                        </h3>
+                                                                        {available.find(
+                                                                            (
+                                                                                avail
+                                                                            ) =>
+                                                                                avail.foodmenuid ===
+                                                                                food.foodmenuid
+                                                                        )
+                                                                            .available ===
+                                                                        "Available" ? (
+                                                                            <p className="text-sm text-green-500">
+                                                                                Available
+                                                                            </p>
+                                                                        ) : (
+                                                                            <p className="text-sm text-red-500">
+                                                                                Not
+                                                                                Available
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="food-menu-description-container">
+                                                                        <p className="text-sm text-gray-500">
+                                                                            {
+                                                                                food.foodmenudescription
+                                                                            }
+                                                                        </p>
+                                                                    </div>
+                                                                    <div className="food-menu-price-container">
+                                                                        {foodPrices
+                                                                            .filter(
+                                                                                (
+                                                                                    price
+                                                                                ) =>
+                                                                                    price.foodmenuid ===
+                                                                                        food.foodmenuid &&
+                                                                                    price.branchid ===
+                                                                                        selectedBranch
+                                                                            )
+                                                                            .map(
+                                                                                (
+                                                                                    price
+                                                                                ) => (
+                                                                                    <div
+                                                                                        key={
+                                                                                            price.foodmenupriceid
+                                                                                        }
+                                                                                    >
+                                                                                        <p className="text-sm text-gray-500">
+                                                                                            Php{" "}
+                                                                                            {
+                                                                                                price.foodmenuprice
+                                                                                            }{" "}
+                                                                                            /{" "}
+                                                                                            {
+                                                                                                price.foodmenucuttype
+                                                                                            }
+                                                                                        </p>
+                                                                                    </div>
+                                                                                )
+                                                                            )}
+                                                                    </div>
+                                                                </div>
+                                                            </li>
+                                                        );
+                                                    } else {
+                                                        return null;
+                                                    }
+                                                })
+                                            ) : (
+                                                <li className="col-span-2">
+                                                    <NoProductsFound
+                                                        text={
+                                                            localStorage.getItem(
+                                                                "userID"
+                                                            )
+                                                                ? "You have not ordered any food yet"
+                                                                : "Must login first to see your favorite foods"
+                                                        }
+                                                    />
+                                                </li>
+                                            )}
                                         </ul>
                                     </>
                                 ) : null}
@@ -758,7 +766,9 @@ const Menu = () => {
                                                                                       price
                                                                                   ) =>
                                                                                       price.foodmenuid ===
-                                                                                      food.foodmenuid
+                                                                                          food.foodmenuid &&
+                                                                                      price.branchid ===
+                                                                                          selectedBranch
                                                                               )
                                                                               .map(
                                                                                   (
@@ -938,7 +948,7 @@ const Menu = () => {
                                                 searchKeyword.toLowerCase()
                                             )
                                 ).length === 0 ? (
-                                    <NoProductsFound />
+                                    <NoProductsFound text="Please try another search keyword" />
                                 ) : null}
                             </div>
                         </div>

@@ -41,7 +41,7 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
                     }
                 );
                 const data = await response.json();
-                setAddress(data[0]);
+                setAddress(data);
                 console.log(data); // Log the fetched data
             } catch (error) {
                 console.error("Error fetching order list:", error);
@@ -140,30 +140,30 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
 
                     setReload(true);
                     console.log(data); // Log the fetched data
-                    // if (response.status === 200) {
-                    //     emailjs
-                    //         .send(
-                    //             "service_pua3st3",
-                    //             "template_lg5gvru",
-                    //             emailData,
-                    //             "oVqRIuWL84xUEw5fd"
-                    //         )
-                    //         .then(
-                    //             (result) => {
-                    //                 console.log(result.text);
+                    if (response.status === 200) {
+                        emailjs
+                            .send(
+                                "service_pua3st3",
+                                "template_lg5gvru",
+                                emailData,
+                                "oVqRIuWL84xUEw5fd"
+                            )
+                            .then(
+                                (result) => {
+                                    console.log(result.text);
 
-                    //                 Swal.fire({
-                    //                     title: "Processed!",
-                    //                     text: "Order has been processed.",
-                    //                     icon: "success",
-                    //                     confirmButtonColor: "#10B981",
-                    //                 });
-                    //             },
-                    //             (error) => {
-                    //                 console.log(error.text);
-                    //             }
-                    //         );
-                    // }
+                                    Swal.fire({
+                                        title: "Processed!",
+                                        text: "Order has been processed.",
+                                        icon: "success",
+                                        confirmButtonColor: "#10B981",
+                                    });
+                                },
+                                (error) => {
+                                    console.log(error.text);
+                                }
+                            );
+                    }
                 } catch (error) {
                     console.error("Error fetching order list:", error);
                 }

@@ -504,7 +504,6 @@ const Registration = () => {
                                 onChange={(e) =>
                                     setCustomerHouseNumber(e.target.value)
                                 }
-                                required
                             />
                         </div>
                         <div className="mb-4">

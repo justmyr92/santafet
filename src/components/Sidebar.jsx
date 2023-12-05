@@ -10,7 +10,7 @@ import {
     faSignOut,
     faMapMarked,
 } from "@fortawesome/free-solid-svg-icons";
-
+import logo from "../assets/logo.png";
 const links = [
     {
         icon: faHome,
@@ -132,11 +132,7 @@ const Sidebar = () => {
     return (
         <aside className="fixed top-0 left-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0 bg-red-600">
             <div className="h-full px-3 py-4 overflow-y-auto">
-                <img
-                    src="../src/assets/logo.png"
-                    alt="logo"
-                    className="w-32 h-32 mx-auto mb-5"
-                />
+                <img src={logo} alt="logo" className="w-32 h-32 mx-auto mb-5" />
                 <hr className="my-3" />
 
                 <ul className="space-y-2 font-medium">

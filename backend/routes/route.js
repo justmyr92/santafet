@@ -393,6 +393,19 @@ router.get("/cart/inner/:id", async (req, res) => {
     }
 });
 
+router.get("/cart/inner/:id/:branchid", async (req, res) => {
+    try {
+        const { id, branchid } = req.params;
+        const allCart = await pool.query(
+            "SELECT * FROM cartTable INNER JOIN foodMenuTable ON cartTable.foodMenuID = foodMenuTable.foodMenuID INNER JOIN foodMenuPriceTable ON cartTable.foodMenuPriceID = foodMenuPriceTable.foodMenuPriceID WHERE customerID = $1 AND branchID = $2",
+            [id, branchid]
+        );
+        res.json(allCart.rows);
+    } catch (err) {
+        console.error(err.message);
+    }
+});
+
 //add address
 router.post("/address/add", async (req, res) => {
     let customerAddressID =
