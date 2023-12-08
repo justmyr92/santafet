@@ -33,8 +33,53 @@ const Foods = () => {
     const [selectedFood, setSelectedFood] = useState({});
 
     const [foods, setFoods] = useState([]);
+    const [search, setSearch] = useState("");
 
     const [foodPrices, setFoodPrices] = useState([]);
+
+    const fetchData = async () => {
+        let apiUrl = "https://santafetaguktukan.online/api/food";
+
+        if (search !== "") {
+            apiUrl += `/search/${search}`;
+        }
+
+        try {
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+
+            const foodsWithDownloadURLs = await Promise.all(
+                data.map(async (food) => {
+                    try {
+                        const imageRef = ref(
+                            storage,
+                            `foods/${food.foodmenuimage}`
+                        );
+                        const downloadURL = await getDownloadURL(imageRef);
+                        console.log(downloadURL);
+                        return { ...food, foodmenuimage: downloadURL };
+                    } catch (error) {
+                        // Handle errors for individual images
+                        console.error(
+                            `Error fetching download URL for ${food.foodmenuimage}`,
+                            error
+                        );
+                        return { ...food, foodmenuimage: null }; // Set to null or handle appropriately
+                    }
+                })
+            );
+
+            setFoods(foodsWithDownloadURLs);
+        } catch (error) {
+            // Handle fetch error
+            console.error("Error fetching food data", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+        setReload(false);
+    }, [reload, search]);
 
     const handleClickedRow = (row) => {
         console.log(row);
@@ -94,37 +139,6 @@ const Foods = () => {
         },
     ]);
 
-    const [search, setSearch] = useState("");
-
-    useEffect(() => {
-        const fetchData = async () => {
-            let apiUrl = "https://santafetaguktukan.online/api/food";
-
-            if (search !== "") {
-                apiUrl += `/search/${search}`;
-            }
-
-            const response = await fetch(apiUrl);
-            const data = await response.json();
-
-            const foodsWithDownloadURLs = await Promise.all(
-                data.map(async (food) => {
-                    const imageRef = ref(
-                        storage,
-                        `foods/${food.foodmenuimage}`
-                    );
-
-                    const downloadURL = await getDownloadURL(imageRef);
-                    return { ...food, foodmenuimage: downloadURL };
-                })
-            );
-
-            setFoods(foodsWithDownloadURLs);
-        };
-
-        fetchData();
-        setReload(false);
-    }, [reload, search]);
     return (
         <>
             <section>

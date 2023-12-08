@@ -62,6 +62,44 @@ const Menu = () => {
     const [reload, setReload] = useState(false);
 
     const [available, setAvailable] = useState([]);
+    const fetchData = async () => {
+        let apiUrl = "https://santafetaguktukan.online/api/food";
+
+        try {
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+
+            const foodsWithDownloadURLs = await Promise.all(
+                data.map(async (food) => {
+                    try {
+                        const imageRef = ref(
+                            storage,
+                            `foods/${food.foodmenuimage}`
+                        );
+                        const downloadURL = await getDownloadURL(imageRef);
+                        console.log(downloadURL);
+                        return { ...food, foodmenuimage: downloadURL };
+                    } catch (error) {
+                        // Handle errors for individual images
+                        console.error(
+                            `Error fetching download URL for ${food.foodmenuimage}`,
+                            error
+                        );
+                        return { ...food, foodmenuimage: null }; // Set to null or handle appropriately
+                    }
+                })
+            );
+
+            setFoods(foodsWithDownloadURLs);
+        } catch (error) {
+            // Handle fetch error
+            console.error("Error fetching food data", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, [reload]);
 
     useEffect(() => {
         setCustomerID(localStorage.getItem("userID"));
@@ -70,24 +108,24 @@ const Menu = () => {
             let dataFood = []; // Declare dataFood here
 
             try {
-                const responseFood = await fetch(
-                    "https://santafetaguktukan.online/api/food"
-                );
-                dataFood = await responseFood.json();
+                // const responseFood = await fetch(
+                //     "https://santafetaguktukan.online/api/food"
+                // );
+                // dataFood = await responseFood.json();
 
-                const foodsWithDownloadURLs = await Promise.all(
-                    dataFood.map(async (food) => {
-                        const imageRef = ref(
-                            storage,
-                            `foods/${food.foodmenuimage}`
-                        );
+                // const foodsWithDownloadURLs = await Promise.all(
+                //     dataFood.map(async (food) => {
+                //         const imageRef = ref(
+                //             storage,
+                //             `foods/${food.foodmenuimage}`
+                //         );
 
-                        const downloadURL = await getDownloadURL(imageRef);
-                        return { ...food, foodmenuimage: downloadURL };
-                    })
-                );
+                //         const downloadURL = await getDownloadURL(imageRef);
+                //         return { ...food, foodmenuimage: downloadURL };
+                //     })
+                // );
 
-                setFoods(foodsWithDownloadURLs);
+                // setFoods(foodsWithDownloadURLs);
 
                 const responseFoodPrice = await fetch(
                     "https://santafetaguktukan.online/api/food/price"
@@ -158,7 +196,7 @@ const Menu = () => {
             );
             const dataBranchLocation = await responseBranchLocation.json();
             const filteredBranchLocation = dataBranchLocation.filter(
-                (branch) => branch.is_active.toString() === "active"
+                (branch) => branch.is_active === "active"
             );
             // setBranchLocation(dataBranchLocation);
             // setSelectedBranch(dataBranchLocation[0].branchid);
