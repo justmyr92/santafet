@@ -14,7 +14,7 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Swal from "sweetalert2";
-import BG from "../assets/img/menubg.png";
+import BG from "../assets/img/menu.jpg";
 
 export const NoProductsFound = ({ text }) => {
     return (
@@ -495,7 +495,7 @@ const Menu = () => {
                     <div className="flex flex-row h-full">
                         <div className="food-menu-container h-full w-[64%] p-4 overflow-y-auto">
                             {/* Banner */}
-                            <div className="santa-fe-banner bg-gray-200">
+                            <div className="santa-fe-banner bg-[#ffff01] flex justify-center items-center w-full rounded-lg">
                                 <img src={BG} alt="Santa Fe Banner" />
                             </div>
                             {/* Search Bar */}
