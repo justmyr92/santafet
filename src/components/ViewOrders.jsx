@@ -90,6 +90,13 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
             text = "Yes, deliver it!";
             status = "Out for Delivery";
             message = `Order #${selectedOrder.customerorderid} is out for delivery.`;
+        } else if (
+            selectedOrder.customerorderstatus === "Processing" &&
+            selectedOrder.order_method === "Pickup"
+        ) {
+            text = "Yes, ready for pickup!";
+            status = "Order is ready for pickup";
+            message = `Order #${selectedOrder.customerorderid} is ready for pickup.`;
         } else {
             text = "Yes, complete it!";
             status = "Completed";
@@ -450,86 +457,183 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
                             </>
                         )}
 
-                    {selectedOrder.customerorderstatus ===
-                        "Out for Delivery" && (
-                        <>
-                            <div className="p-6 space-y-3">
-                                <h3 className="text-lg font-semibold">
-                                    Line Items: {orderList.length}
-                                </h3>
-                                {orderList.map((item) => (
-                                    <div
-                                        className="flex items-center justify-between bg-gray-100 p-4 rounded mb-2 hover:bg-gray-200"
-                                        key={item.customerorderitemid}
-                                    >
-                                        <div className="flex-1">
-                                            <h3 className="text-lg font-semibold">
-                                                {item.foodmenuname}
-                                            </h3>
-                                            <p className="text-gray-600">
-                                                Cut Type: {item.foodmenucuttype}
-                                            </p>
-                                            <p className="text-gray-600">
-                                                Price: {item.foodmenuprice}
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center">
-                                            <div className="mr-4">
+                    {selectedOrder.customerorderstatus === "Processing" &&
+                        selectedOrder.order_method === "Pickup" && (
+                            <>
+                                <div className="p-6 space-y-3">
+                                    <h3 className="text-lg font-semibold">
+                                        Line Items: {orderList.length}
+                                    </h3>
+                                    {orderList.map((item) => (
+                                        <div
+                                            className="flex items-center justify-between bg-gray-100 p-4 rounded mb-2 hover:bg-gray-200"
+                                            key={item.customerorderitemid}
+                                        >
+                                            <div className="flex-1">
+                                                <h3 className="text-lg font-semibold">
+                                                    {item.foodmenuname}
+                                                </h3>
                                                 <p className="text-gray-600">
-                                                    Quantity:{" "}
-                                                    {
-                                                        item.customerorderitemquantity
-                                                    }
+                                                    Cut Type:{" "}
+                                                    {item.foodmenucuttype}
                                                 </p>
                                                 <p className="text-gray-600">
-                                                    Total Price:{" "}
-                                                    {
-                                                        item.customerorderitemtotalprice
-                                                    }
+                                                    Price: {item.foodmenuprice}
                                                 </p>
                                             </div>
+                                            <div className="flex items-center">
+                                                <div className="mr-4">
+                                                    <p className="text-gray-600">
+                                                        Quantity:{" "}
+                                                        {
+                                                            item.customerorderitemquantity
+                                                        }
+                                                    </p>
+                                                    <p className="text-gray-600">
+                                                        Total Price:{" "}
+                                                        {
+                                                            item.customerorderitemtotalprice
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
 
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-base">
-                                        {/* sum all the total price */}
-                                        Total Price:{" "}
-                                        {orderList.reduce(
-                                            (acc, cur) =>
-                                                acc +
-                                                parseFloat(
-                                                    cur.customerorderitemtotalprice
-                                                ),
-                                            0
-                                        )}
-                                    </h3>
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-lg font-semibold">
+                                            Pick Up Time:
+                                        </label>
+                                        <input
+                                            type="text"
+                                            className="border border-gray-300 rounded-lg p-2"
+                                            value={deliveryTime}
+                                            onChange={(e) =>
+                                                setDeliveryTime(e.target.value)
+                                            }
+                                        />
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-base">
+                                            {/* sum all the total price */}
+                                            Total Price:{" "}
+                                            {orderList.reduce(
+                                                (acc, cur) =>
+                                                    acc +
+                                                    parseFloat(
+                                                        cur.customerorderitemtotalprice
+                                                    ),
+                                                0
+                                            )}
+                                        </h3>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
-                                <button
-                                    data-modal-hide="default-modal"
-                                    type="button"
-                                    className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
-                                    onClick={() => processOrder()}
-                                >
-                                    Complete Order
-                                </button>
-                                <button
-                                    data-modal-hide="default-modal"
-                                    type="button"
-                                    className="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue
+
+                                <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
+                                    <button
+                                        data-modal-hide="default-modal"
+                                        type="button"
+                                        className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                                        onClick={() => processOrder()}
+                                    >
+                                        Ready for Pickup
+                                    </button>
+                                    <button
+                                        data-modal-hide="default-modal"
+                                        type="button"
+                                        className="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10"
+                                        onClick={() =>
+                                            setShowOrderDetailsModal(false)
+                                        }
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </>
+                        )}
+
+                    {selectedOrder.customerorderstatus === "Out for Delivery" ||
+                        (selectedOrder.customerorderstatus ===
+                            "Order is ready for pickup" && (
+                            <>
+                                <div className="p-6 space-y-3">
+                                    <h3 className="text-lg font-semibold">
+                                        Line Items: {orderList.length}
+                                    </h3>
+                                    {orderList.map((item) => (
+                                        <div
+                                            className="flex items-center justify-between bg-gray-100 p-4 rounded mb-2 hover:bg-gray-200"
+                                            key={item.customerorderitemid}
+                                        >
+                                            <div className="flex-1">
+                                                <h3 className="text-lg font-semibold">
+                                                    {item.foodmenuname}
+                                                </h3>
+                                                <p className="text-gray-600">
+                                                    Cut Type:{" "}
+                                                    {item.foodmenucuttype}
+                                                </p>
+                                                <p className="text-gray-600">
+                                                    Price: {item.foodmenuprice}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center">
+                                                <div className="mr-4">
+                                                    <p className="text-gray-600">
+                                                        Quantity:{" "}
+                                                        {
+                                                            item.customerorderitemquantity
+                                                        }
+                                                    </p>
+                                                    <p className="text-gray-600">
+                                                        Total Price:{" "}
+                                                        {
+                                                            item.customerorderitemtotalprice
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="text-base">
+                                            {/* sum all the total price */}
+                                            Total Price:{" "}
+                                            {orderList.reduce(
+                                                (acc, cur) =>
+                                                    acc +
+                                                    parseFloat(
+                                                        cur.customerorderitemtotalprice
+                                                    ),
+                                                0
+                                            )}
+                                        </h3>
+                                    </div>
+                                </div>
+                                <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">
+                                    <button
+                                        data-modal-hide="default-modal"
+                                        type="button"
+                                        className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                                        onClick={() => processOrder()}
+                                    >
+                                        Complete Order
+                                    </button>
+                                    <button
+                                        data-modal-hide="default-modal"
+                                        type="button"
+                                        className="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-blue
                                     -300 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10"
-                                    onClick={() =>
-                                        setShowOrderDetailsModal(false)
-                                    }
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </>
-                    )}
+                                        onClick={() =>
+                                            setShowOrderDetailsModal(false)
+                                        }
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </>
+                        ))}
 
                     {selectedOrder.customerorderstatus === "Completed" && (
                         <>

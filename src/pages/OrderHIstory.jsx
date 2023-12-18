@@ -10,6 +10,7 @@ import {
     faSpinner,
     faTruck,
     faEye,
+    faHandsHelping,
 } from "@fortawesome/free-solid-svg-icons";
 
 const OrderHIstory = () => {
@@ -60,7 +61,6 @@ const OrderHIstory = () => {
             );
             const data = await response.json();
             setOrders(data);
-            console.log(data);
         };
         fetchAddress();
         fetchOrders();
@@ -92,6 +92,30 @@ const OrderHIstory = () => {
         setPage(new_page);
         console.log(order);
         setSelectedOrder(order);
+        if (order.order_method === "Pickup") {
+            setStatus([
+                {
+                    id: 1,
+                    status: "Pending",
+                    icon: faClock,
+                },
+                {
+                    id: 2,
+                    status: "Processing",
+                    icon: faSpinner,
+                },
+                {
+                    id: 3,
+                    status: "Order is ready for pickup",
+                    icon: faHandsHelping,
+                },
+                {
+                    id: 4,
+                    status: "Completed",
+                    icon: faCheck,
+                },
+            ]);
+        }
     };
 
     const column3 = useMemo(() => [
@@ -326,11 +350,12 @@ const OrderHIstory = () => {
                                             </td>
                                         </tr>
 
-                                        {/* estimated_delivery_time */}
-
                                         <tr className="p-2">
                                             <td className="text-base font-bold py-2">
-                                                Estimated Delivery Time:
+                                                {selectedOrder.order_method ===
+                                                "Pickup"
+                                                    ? "Estimated Pickup Time:"
+                                                    : "Estimated Delivery Time:"}
                                             </td>
                                             <td className="text-base">
                                                 {selectedOrder.estimated_delivery_time

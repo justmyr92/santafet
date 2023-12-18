@@ -4,27 +4,7 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../db/sfm_db");
 const bcrypt = require("bcrypt");
-const path = require("path");
 
-const multer = require("multer");
-
-// Set The Storage Engine
-const storage = multer.diskStorage({
-    destination: "../src/assets/foods",
-    filename: function (req, file, cb) {
-        cb(
-            null,
-            file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-        );
-    },
-});
-const upload = multer({ storage: storage });
-
-// router.get("/", (req, res) => {
-//     res.send("Hello World!");
-// });
-
-//add food item
 router.post("/food/add", async (req, res) => {
     try {
         const {
@@ -235,6 +215,17 @@ router.get("/order/count/:id", async (req, res) => {
         console.error(err.message);
     }
 });
+router.get("/order/all/count/", async (req, res) => {
+    try {
+        const countOrder = await pool.query(
+            "SELECT COUNT(*) FROM customerOrderTable"
+        );
+        res.json(countOrder.rows[0]);
+        console.log(countOrder.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+    }
+});
 
 //get orders where status is success
 router.get("/order/success/:id", async (req, res) => {
@@ -243,6 +234,17 @@ router.get("/order/success/:id", async (req, res) => {
         const allOrder = await pool.query(
             "SELECT SUM(customerOrderTotalPrice) FROM customerOrderTable WHERE customerOrderStatus = 'Completed' AND branchID = $1",
             [id]
+        );
+        console.log(allOrder.rows[0], "asd");
+        res.json(allOrder.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+    }
+});
+router.get("/order/all/success", async (req, res) => {
+    try {
+        const allOrder = await pool.query(
+            "SELECT SUM(customerOrderTotalPrice) FROM customerOrderTable WHERE customerOrderStatus = 'Completed'"
         );
         console.log(allOrder.rows[0], "asd");
         res.json(allOrder.rows[0]);
@@ -778,21 +780,6 @@ router.get("/branch", async (req, res) => {
 });
 
 router.patch("/address/update", async (req, res) => {
-    // {
-    //     "customeraddressid": "SFMA5238548110000000",
-    //     "customerid": "C56463520",
-    //     "customerfullname": "Justmyr Gutierrez",
-    //     "customercontactnumber": "09063488667",
-    //     "customerstreet": "Sitio 7",
-    //     "customerbarangay": "Balete Relocation Site",
-    //     "customercity": "Batangas City",
-    //     "customernotes": "3",
-    //     "customeraddresslabel": "work",
-    //     "customeraddressdefault": true,
-    //     "addresslatitude": "13.81907555",
-    //     "addresslongitude": "121.06428337048469"
-    // }
-
     try {
         const {
             customeraddressid,
@@ -1287,39 +1274,8 @@ router.patch("/branch/update", async (req, res) => {
     }
 });
 
-// const handleUpdateSubmit = async (e) => {
-//     e.preventDefault();
-//     try {
-//         const response = await fetch(
-//             `https://santafetaguktukan.online/api/admin/`, // Assuming there's a route to update a specific admin by ID
-//             {
-//                 method: "PATCH", // Use the appropriate HTTP method for updating
-//                 headers: {
-//                     "Content-Type": "application/json",
-//                 },
-//                 body: JSON.stringify(updateAdmin),
-//             }
-//         );
-//         const data = await response.json();
-//         console.log("Admin updated:", data);
-
-//         setReload(true);
-//     } catch (error) {
-//         console.error("Error updating admin:", error);
-//     }
-
-//     setShowEditAdminModal(false);
-// };
-
 router.patch("/admin", async (req, res) => {
     try {
-        // adminid: row.adminid,
-        //         adminfirstname: row.adminfirstname,
-        //         adminlastname: row.adminlastname,
-        //         adminemailaddress: row.adminemailaddress,
-        //         adminpassword: row.adminpassword,
-        //         admincontactnumber: row.admincontactnumber,
-
         const {
             adminid,
             adminfirstname,
@@ -1358,15 +1314,6 @@ router.post("/customer/email", async (req, res) => {
         console.error(err.message);
     }
 });
-// const body = { email, password };
-// const response = await fetch(
-//     "https://santafetaguktukan.online/api/customer/forgotpassword",
-//     {
-//         method: "PATCH",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify(body),
-//     }
-// );
 
 router.patch("/customer/forgotpassword", async (req, res) => {
     try {
@@ -1396,6 +1343,23 @@ router.delete("/admin/delete/:id", async (req, res) => {
     }
 });
 
-module.exports = router;
+router.delete("/all/food", async (req, res) => {
+    try {
+        //delte from cart, customerorderitemtable, customerordertable, productavailabilitytable, foodmenupricetable, foodmenutable
+        const deleteCart = await pool.query("DELETE FROM cartTable");
+        const deleteOrderItem = await pool.query(
+            "DELETE FROM customerOrderItemTable"
+        );
+        const deleteOrder = await pool.query("DELETE FROM customerOrderTable");
+        const deleteAvailability = await pool.query(
+            "DELETE FROM productAvailabilityTable"
+        );
+        const deletePrice = await pool.query("DELETE FROM foodMenuPriceTable");
+        const deleteFood = await pool.query("DELETE FROM foodMenuTable");
+        res.json("All food was deleted!");
+    } catch (err) {
+        console.error(err.message);
+    }
+});
 
-// Path: backend/routes/route.js
+module.exports = router;

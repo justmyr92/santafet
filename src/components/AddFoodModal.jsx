@@ -8,6 +8,7 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
     const [foodName, setFoodName] = useState("");
     const [foodMenuDescription, setFoodMenuDescription] = useState("");
     const [foodMenuCategory, setFoodMenuCategory] = useState("Chicken");
+    const [fileError, setFileError] = useState("");
     const [foodMenuImage, setFoodMenuImage] = useState(
         "../src/assets/foods/im.jpg"
     );
@@ -24,21 +25,6 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
             { foodMenuPrice: "", foodMenuCutType: "" },
         ]);
     };
-
-    useEffect(() => {
-        console.log(foodName);
-        console.log(foodMenuDescription);
-        console.log(foodMenuCategory);
-        console.log(foodMenuImage);
-
-        console.log(menuPrices);
-    }, [
-        foodName,
-        foodMenuDescription,
-        foodMenuCategory,
-        foodMenuImage,
-        menuPrices,
-    ]);
 
     const handleRemovePrice = (index) => {
         if (menuPrices.length === 1) return;
@@ -66,82 +52,12 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
         getBranchID();
     }, []);
 
-    //     e.preventDefault();
-
-    //     const id = Math.floor(Math.random() * 90000) + 10000;
-    //     const formData = new FormData();
-    //     formData.append("foodMenuID", id);
-    //     formData.append("foodMenuImage", foodMenuImage);
-    //     formData.append("foodMenuName", foodName);
-    //     formData.append("foodMenuDescription", foodMenuDescription);
-    //     formData.append("foodMenuCategory", foodMenuCategory);
-
-    //     const response = fetch("https://santafetaguktukan.online/api/food/add", {
-    //         method: "POST",
-
-    //         body: formData,
-    //     });
-
-    //     console.log("Food added");
-    //     menuPrices.map((price) => {
-    //         let priceData = {
-    //             foodMenuID: id.toString(),
-    //             foodMenuPrice: price.foodMenuPrice,
-    //             foodMenuCutType: price.foodMenuCutType,
-    //         };
-    //         const response = fetch("https://santafetaguktukan.online/api/foodprice/add", {
-    //             method: "POST",
-    //             headers: {
-    //                 "Content-Type": "application/json",
-    //             },
-    //             body: JSON.stringify(priceData),
-    //         });
-
-    //         console.log(response);
-    //         console.log("Price added");
-    //     });
-    //     //availabilityid | branchid | foodmenuid | available
-    //     branchID.map((branch) => {
-    //         let availabilityData = {
-    //             availabilityID: Math.floor(Math.random() * 90000) + 10000,
-    //             branchID: branch.branchID,
-    //             foodMenuID: id.toString(),
-    //             available: "Available",
-    //         };
-    //         const response = fetch("https://santafetaguktukan.online/api/availability/add", {
-    //             method: "POST",
-    //             headers: {
-    //                 "Content-Type": "application/json",
-    //             },
-    //             body: JSON.stringify(availabilityData),
-    //         });
-    //         console.log(response);
-    //         console.log("Availability added");
-    //     });
-    //     setReload(true);
-    //     setShowModal(false);
-    // };
-
     const handleSubmit = (e) => {
         e.preventDefault();
 
         const id = Math.floor(Math.random() * 90000) + 10000;
-        // const formData = new FormData();
-        // formData.append("foodMenuID", id);
-        // formData.append("foodMenuImage", foodMenuImage);
-        // formData.append("foodMenuName", foodName);
-        // formData.append("foodMenuDescription", foodMenuDescription);
-        // formData.append("foodMenuCategory", foodMenuCategory);
 
         let new_food_name = foodMenuImage.name + v4();
-
-        // const {
-        //     foodMenuID,
-        //     foodMenuName,
-        //     foodMenuDescription,
-        //     foodMenuCategory,
-        //     foodMenuImage,
-        // } = req.body;
 
         const new_food = {
             foodMenuID: id,
@@ -150,6 +66,11 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
             foodMenuCategory: foodMenuCategory,
             foodMenuImage: new_food_name,
         };
+
+        if (!foodMenuImage.type.match("image.*")) {
+            setFileError("Please select an image file");
+            return;
+        }
 
         try {
             const setFood = async () => {
@@ -331,13 +252,18 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
                                 </label>
                                 <input
                                     type="file"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none"
+                                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none ${
+                                        fileError ? "border-red-500" : ""
+                                    }`}
                                     name="foodMenuImage"
                                     placeholder="Food Image"
                                     onChange={(e) =>
                                         setFoodMenuImage(e.target.files[0])
                                     }
                                 />
+                                <small className="text-red-500 text-sm mt-1">
+                                    {fileError}
+                                </small>
                             </div>
                             <div className="grid grid-cols-1 gap-4">
                                 {menuPrices.map((price, index) => (
@@ -360,6 +286,7 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
                                                         e.target.value
                                                     )
                                                 }
+                                                required
                                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none"
                                             />
                                         </div>
@@ -377,6 +304,7 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
                                                         e.target.value
                                                     )
                                                 }
+                                                required
                                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none"
                                             />
                                         </div>

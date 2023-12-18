@@ -31,6 +31,7 @@ const Dashboard = () => {
     const [branchRanking, setBranchRanking] = useState([]);
 
     const [id, setId] = useState(localStorage.getItem("userID"));
+    const [role, setRole] = useState(localStorage.getItem("userRoleID"));
 
     useEffect(() => {
         if (localStorage.getItem("userID") === null) {
@@ -123,13 +124,24 @@ const Dashboard = () => {
 
         const getOrderCount = async () => {
             try {
-                const response = await fetch(
-                    `https://santafetaguktukan.online/api/order/count/${admin.branchid}`
-                );
+                if (role === "ADM") {
+                    const response = await fetch(
+                        `https://santafetaguktukan.online/api/order/count/${admin.branchid}`
+                    );
 
-                const jsonData = await response.json();
+                    const jsonData = await response.json();
 
-                setOrderCount(jsonData.count);
+                    setOrderCount(jsonData.count);
+                }
+                if (role === "STF") {
+                    const response = await fetch(
+                        `https://santafetaguktukan.online/api/order/all/count/`
+                    );
+
+                    const jsonData = await response.json();
+
+                    setOrderCount(jsonData.count);
+                }
             } catch (err) {
                 console.error(err.message);
             }
@@ -153,12 +165,20 @@ const Dashboard = () => {
 
         const getSaleCount = async () => {
             try {
-                const response = await fetch(
-                    `https://santafetaguktukan.online/api/order/success/${admin.branchid}`
-                );
-
-                const jsonData = await response.json();
-                setSaleCount(jsonData.sum);
+                if (role === "ADM") {
+                    const response = await fetch(
+                        `https://santafetaguktukan.online/api/order/success/${admin.branchid}`
+                    );
+                    const jsonData = await response.json();
+                    setSaleCount(jsonData.sum);
+                }
+                if (role === "STF") {
+                    const response = await fetch(
+                        `https://santafetaguktukan.online/api/order/all/success/`
+                    );
+                    const jsonData = await response.json();
+                    setSaleCount(jsonData.sum);
+                }
             } catch (err) {
                 console.error(err.message);
             }
@@ -221,7 +241,7 @@ const Dashboard = () => {
         };
 
         updateMonthlyProfits();
-    }, [admin.branchid]); // Added admin.branchid as a dependency
+    }, [admin.branchid, role]);
 
     return (
         <section className="section">

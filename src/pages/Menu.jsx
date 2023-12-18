@@ -62,6 +62,24 @@ const Menu = () => {
     const [reload, setReload] = useState(false);
 
     const [available, setAvailable] = useState([]);
+
+    useEffect(() => {
+        const fetchBranchLocation = async () => {
+            const responseBranchLocation = await fetch(
+                "https://santafetaguktukan.online/api/branch"
+            );
+            const dataBranchLocation = await responseBranchLocation.json();
+
+            const filteredBranchLocation = dataBranchLocation.filter(
+                (branch) => branch.is_active === "active"
+            );
+
+            console.log(filteredBranchLocation);
+            setBranchLocation(filteredBranchLocation);
+        };
+        fetchBranchLocation();
+    }, []);
+
     const fetchData = async () => {
         let apiUrl = "https://santafetaguktukan.online/api/food";
 
@@ -80,17 +98,26 @@ const Menu = () => {
                         console.log(downloadURL);
                         return { ...food, foodmenuimage: downloadURL };
                     } catch (error) {
-                        // Handle errors for individual images
                         console.error(
                             `Error fetching download URL for ${food.foodmenuimage}`,
                             error
                         );
-                        return { ...food, foodmenuimage: null }; // Set to null or handle appropriately
+                        return { ...food, foodmenuimage: null };
                     }
                 })
             );
 
-            setFoods(foodsWithDownloadURLs);
+            // Check if all foods have valid data before setting the state
+            if (
+                foodsWithDownloadURLs.every((food) => food && food.foodmenuname)
+            ) {
+                setFoods(foodsWithDownloadURLs);
+            } else {
+                console.error(
+                    "Invalid data in foodsWithDownloadURLs",
+                    foodsWithDownloadURLs
+                );
+            }
         } catch (error) {
             // Handle fetch error
             console.error("Error fetching food data", error);
@@ -98,34 +125,9 @@ const Menu = () => {
     };
 
     useEffect(() => {
-        fetchData();
-    }, [reload]);
-
-    useEffect(() => {
-        setCustomerID(localStorage.getItem("userID"));
-
-        const fetchData = async () => {
-            let dataFood = []; // Declare dataFood here
-
+        const fetchMenuData = async () => {
             try {
-                // const responseFood = await fetch(
-                //     "https://santafetaguktukan.online/api/food"
-                // );
-                // dataFood = await responseFood.json();
-
-                // const foodsWithDownloadURLs = await Promise.all(
-                //     dataFood.map(async (food) => {
-                //         const imageRef = ref(
-                //             storage,
-                //             `foods/${food.foodmenuimage}`
-                //         );
-
-                //         const downloadURL = await getDownloadURL(imageRef);
-                //         return { ...food, foodmenuimage: downloadURL };
-                //     })
-                // );
-
-                // setFoods(foodsWithDownloadURLs);
+                await fetchData();
 
                 const responseFoodPrice = await fetch(
                     "https://santafetaguktukan.online/api/food/price"
@@ -142,35 +144,33 @@ const Menu = () => {
 
                 setBranchSelectKey((prevKey) => prevKey + 1); // Increment the key
 
-                if (localStorage.getItem("userID") !== null) {
+                const userID = localStorage.getItem("userID");
+                if (userID) {
                     const responseCart = await fetch(
-                        "https://santafetaguktukan.online/api/cart/" +
-                            localStorage.getItem("userID")
+                        `https://santafetaguktukan.online/api/cart/${userID}`
                     );
                     const dataCart = await responseCart.json();
                     setCart(dataCart);
 
                     const responseAddresses = await fetch(
-                        "https://santafetaguktukan.online/api/address/" +
-                            customerID
+                        `https://santafetaguktukan.online/api/address/${userID}`
                     );
                     const dataAddresses = await responseAddresses.json();
-                    setAddress(dataAddresses);
                     console.log("dataAddresses:", dataAddresses, "asdasdasd");
-                    // const defaultAddress = dataAddresses.find(
-                    //     (address) => address.customeraddressdefault === true
-                    // );
+                    setAddress(dataAddresses);
+                    console.log(
+                        "address:",
+                        dataAddresses,
+                        "asdasdasdasdasdsdasdas"
+                    );
                     setSelectedAddress(dataAddresses);
 
                     const responseFavoriteFoods = await fetch(
-                        "https://santafetaguktukan.online/api/order/most/" +
-                            customerID
+                        `https://santafetaguktukan.online/api/order/most/${userID}`
                     );
-
                     const dataFavoriteFoods =
                         await responseFavoriteFoods.json();
-
-                    console.log(dataFavoriteFoods, "test2   ");
+                    console.log(dataFavoriteFoods, "test2");
                     setFavoriteFoods(dataFavoriteFoods);
                 }
 
@@ -181,33 +181,13 @@ const Menu = () => {
                 setBestSeller(dataBestSeller);
                 console.log(dataBestSeller, "test");
             } catch (error) {
-                console.error(error);
+                console.error("Error fetching menu data:", error);
             }
         };
 
-        fetchData();
+        fetchMenuData();
         setReload(false);
     }, [customerID, filterKeyword, reload, selectedBranch]);
-
-    useEffect(() => {
-        const fetchBranchLocation = async () => {
-            const responseBranchLocation = await fetch(
-                "https://santafetaguktukan.online/api/branch"
-            );
-            const dataBranchLocation = await responseBranchLocation.json();
-            const filteredBranchLocation = dataBranchLocation.filter(
-                (branch) => branch.is_active === "active"
-            );
-            // setBranchLocation(dataBranchLocation);
-            // setSelectedBranch(dataBranchLocation[0].branchid);
-            // setNearestBranch(dataBranchLocation[0].branchid);
-            setBranchLocation(filteredBranchLocation);
-            setSelectedBranch(filteredBranchLocation[0].branchid);
-            setNearestBranch(filteredBranchLocation[0].branchid);
-            console.log(dataBranchLocation);
-        };
-        fetchBranchLocation();
-    }, []);
 
     const deleteFromCart = async (cartID) => {
         try {
@@ -244,6 +224,8 @@ const Menu = () => {
             const branchLatitude = parseFloat(branch.branchlatitude);
             const branchLongitude = parseFloat(branch.branchlongitude);
 
+            console.log(branchLatitude, branchLongitude);
+
             const dLat = ((branchLatitude - customerLatitude) * Math.PI) / 180;
             const dLon =
                 ((branchLongitude - customerLongitude) * Math.PI) / 180;
@@ -259,22 +241,24 @@ const Menu = () => {
             if (distance < minDistance) {
                 minDistance = distance;
                 nearestBranchID = branch.branchid;
+                console.log(nearestBranchID);
             }
+
+            console.log(nearestBranchID);
         });
 
-        if (nearestBranchID === null) {
-            setNearestBranch(nearestBranchID);
-            setSelectedBranch(nearestBranchID);
-        }
+        // Only update nearestBranch, do not update selectedBranch
+        setNearestBranch(nearestBranchID);
     };
 
+    //find nearest branch
     useEffect(() => {
-        if (selectedAddress) {
+        if (
+            selectedAddress.addresslatitude &&
+            selectedAddress.addresslongitude
+        ) {
             findNearestBranch(
-                // selectedAddress.customerlatitude to number
                 parseFloat(selectedAddress.addresslatitude),
-
-                // selectedAddress.customerlongitude to number
                 parseFloat(selectedAddress.addresslongitude)
             );
         }
@@ -1147,13 +1131,12 @@ const Menu = () => {
                                                             {item.quantity} x
                                                         </p>
                                                         <p className="text-sm font-medium text-gray-900">
-                                                            {
+                                                            {foods &&
                                                                 foods.find(
                                                                     (food) =>
                                                                         food.foodmenuid ===
                                                                         item.foodmenuid
-                                                                ).foodmenuname
-                                                            }
+                                                                )?.foodmenuname}
                                                         </p>
                                                     </div>
                                                     <div className="flex flex-row justify-end items-center space-x-2">

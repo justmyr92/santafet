@@ -312,7 +312,7 @@ const Users = () => {
             <div className="p-4 sm:ml-64">
                 <div className="p-4 border-2 border-gray-200 border-dashed rounded-lg">
                     <div className="flex justify-between mb-4">
-                        <h2 className="text-2xl font-semibold">Users</h2>
+                        <h2 className="text-2xl font-semibold">Staffs</h2>
                         <div className="flex items-center gap-2">
                             <input
                                 type="text"
@@ -590,24 +590,7 @@ const Users = () => {
                                     <option value="inactive">Inactive</option>
                                 </select>
                             </div>
-                            {/* <div className="mb-4">
-                                    <label
-                                        htmlFor="adminpassword"
-                                        className="block text-sm font-medium text-gray-700"
-                                    >
-                                        Password
-                                    </label>
-                                    <input
-                                        type="password"
-                                        id="adminpassword"
-                                        name="adminpassword"
-                                        value={updateAdmin.adminpassword}
-                                        onChange={handleUpdateInputChange}
-                                        onClick={handleInputClick}
-                                        className="mt-1 p-2 border border-gray-300 rounded-md w-full"
-                                        required
-                                    />
-                                </div> */}
+
                             <div className="mb-4">
                                 <label
                                     htmlFor="admincontactnumber"

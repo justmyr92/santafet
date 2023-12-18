@@ -159,34 +159,6 @@ const UpdateFoodModal = ({ showModal, setShowModal, foodData, setReload }) => {
                             onChange={(e) => setNewImage(e.target.files[0])}
                         />
                         <img src={foodMenuImage} alt="food" className="w-1/4" />
-
-                        {/* <div className="grid grid-cols-2 gap-4">
-                            {foodPrice.map((price, index) => (
-                                <div
-                                    key={index}
-                                    className="flex flex-col items-start justify-start space-y-1"
-                                >
-                                    <label
-                                        htmlFor={`foodPrice${price.foodmenuid}`}
-                                    >
-                                        {price.foodmenucuttype}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none"
-                                        name={`foodPrice${price.foodmenuid}`}
-                                        placeholder="Food Price"
-                                        value={price.foodmenuprice}
-                                        onChange={(e) => {
-                                            const newPrice = [...foodPrice];
-                                            newPrice[index].foodmenuprice =
-                                                e.target.value;
-                                            setNewFoodPrice(newPrice);
-                                        }}
-                                    />
-                                </div>
-                            ))}
-                        </div> */}
                     </div>
 
                     <div className="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b">

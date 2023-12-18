@@ -57,11 +57,6 @@ const links = [
         text: "Staff",
         route: "/staff",
     },
-    {
-        icon: faUser,
-        text: "Admin",
-        route: "/admin",
-    },
 ];
 
 const Sidebar = () => {
@@ -113,7 +108,7 @@ const Sidebar = () => {
                     link.text === "Customer" ||
                     link.text === "Branch" ||
                     link.text === "Foods" ||
-                    link.text === "Admin"
+                    link.text === "Staff"
             );
         } else if (userRole === "ADM") {
             return links.filter(
