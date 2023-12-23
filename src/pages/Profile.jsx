@@ -21,7 +21,7 @@ const Profile = () => {
         const getCustomer = async () => {
             try {
                 const response = await fetch(
-                    `https://santafetaguktukan.online/api/customer/${customerID}`,
+                    `http://localhost:7722/api/customer/${customerID}`,
                     {
                         method: "GET",
                         headers: {
@@ -71,7 +71,7 @@ const Profile = () => {
     const handleSaveClick = async () => {
         try {
             await fetch(
-                `https://santafetaguktukan.online/api/customer/update/${customerID}`,
+                `http://localhost:7722/api/customer/update/${customerID}`,
                 {
                     method: "PATCH",
                     headers: {

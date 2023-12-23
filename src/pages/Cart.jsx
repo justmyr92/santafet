@@ -30,7 +30,7 @@ const Cart = () => {
         setLoading(true);
         try {
             const response = await fetch(
-                `https://santafetaguktukan.online/api/cart/inner/${ID}`,
+                `http://localhost:7722/api/cart/inner/${ID}`,
                 {
                     method: "GET",
                     headers: {
@@ -73,7 +73,7 @@ const Cart = () => {
             if (result.isConfirmed) {
                 try {
                     const response = await fetch(
-                        `https://santafetaguktukan.online/api/cart/delete/item/${cartID}`,
+                        `http://localhost:7722/api/cart/delete/item/${cartID}`,
                         {
                             method: "DELETE",
                             headers: {
@@ -132,7 +132,7 @@ const Cart = () => {
     const getAddresses = async () => {
         try {
             const response = await fetch(
-                `https://santafetaguktukan.online/api/address/${ID}`,
+                `http://localhost:7722/api/address/${ID}`,
                 {
                     method: "GET",
                     headers: {
@@ -150,15 +150,12 @@ const Cart = () => {
 
     const getBranches = async () => {
         try {
-            const response = await fetch(
-                `https://santafetaguktukan.online/api/branch`,
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
+            const response = await fetch(`http://localhost:7722/api/branch`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
             const branchJSON = await response.json();
 
             setBranch(
@@ -188,7 +185,7 @@ const Cart = () => {
                     const customerorderid =
                         Math.floor(Math.random() * 999999) + 100000;
                     const response = await fetch(
-                        `https://santafetaguktukan.online/api/order/add`,
+                        `http://localhost:7722/api/order/add`,
                         {
                             method: "POST",
                             headers: {
@@ -216,7 +213,7 @@ const Cart = () => {
                             if (checkedProducts.includes(cartDetail.cartid)) {
                                 try {
                                     const response = await fetch(
-                                        `https://santafetaguktukan.online/api/order/item/add`,
+                                        `http://localhost:7722/api/order/item/add`,
                                         {
                                             method: "POST",
                                             headers: {
@@ -246,7 +243,7 @@ const Cart = () => {
                                     if (response.ok) {
                                         try {
                                             const response = await fetch(
-                                                `https://santafetaguktukan.online/api/cart/delete/item/${cartDetail.cartid}`,
+                                                `http://localhost:7722/api/cart/delete/item/${cartDetail.cartid}`,
                                                 {
                                                     method: "DELETE",
                                                     headers: {
@@ -333,7 +330,7 @@ const Cart = () => {
     const updateQuantity = async (cartID, quantity) => {
         try {
             const response = await fetch(
-                `https://santafetaguktukan.online/api/cart/update/${cartID}`,
+                `http://localhost:7722/api/cart/update/${cartID}`,
                 {
                     method: "PATCH",
                     headers: {
@@ -364,7 +361,7 @@ const Cart = () => {
         const UpdateQuantity = async (cartID) => {
             try {
                 const response = await fetch(
-                    `https://santafetaguktukan.online/api/cart/update/${cartID}`,
+                    `http://localhost:7722/api/cart/update/${cartID}`,
                     {
                         method: "PATCH",
                         headers: {
@@ -415,7 +412,7 @@ const Cart = () => {
             if (result.isConfirmed) {
                 try {
                     const response = await fetch(
-                        `https://santafetaguktukan.online/api/cart/delete/all/${ID}`,
+                        `http://localhost:7722/api/cart/delete/all/${ID}`,
                         {
                             method: "DELETE",
                             headers: {
