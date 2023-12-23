@@ -9,7 +9,7 @@ const AddressBook = () => {
     useEffect(() => {
         const fetchAddress = async () => {
             const response = await fetch(
-                `http://localhost:7722/api/address/${localStorage.getItem(
+                `https://santafetaguktukan.online/api/address/${localStorage.getItem(
                     "userID"
                 )}`
             );
@@ -18,7 +18,7 @@ const AddressBook = () => {
         };
         const fetchOrders = async () => {
             const response = await fetch(
-                `http://localhost:7722/api/order/${localStorage.getItem(
+                `https://santafetaguktukan.online/api/order/${localStorage.getItem(
                     "userID"
                 )}`
             );

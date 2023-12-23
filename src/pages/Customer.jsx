@@ -32,14 +32,14 @@ const Customer = () => {
     useEffect(() => {
         const fetchAddress = async () => {
             const response = await fetch(
-                `http://localhost:7722/api/address/${selectedCustomerID}`
+                `https://santafetaguktukan.online/api/address/${selectedCustomerID}`
             );
             const data = await response.json();
             setAddresses(data);
         };
         const fetchOrders = async () => {
             const response = await fetch(
-                `http://localhost:7722/api/order/${selectedCustomerID}`
+                `https://santafetaguktukan.online/api/order/${selectedCustomerID}`
             );
             const data = await response.json();
             setOrders(data);
@@ -258,10 +258,10 @@ const Customer = () => {
     useEffect(() => {
         //
         const fetchData = async () => {
-            let apiUrl = "http://localhost:7722/api/customer";
+            let apiUrl = "https://santafetaguktukan.online/api/customer";
 
             if (search) {
-                apiUrl = `http://localhost:7722/api/customer/search/${search}`;
+                apiUrl = `https://santafetaguktukan.online/api/customer/search/${search}`;
             }
 
             const response = await fetch(apiUrl);

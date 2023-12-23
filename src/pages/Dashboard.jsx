@@ -54,7 +54,7 @@ const Dashboard = () => {
         const fetchBranchRanking = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/api/sales/branch`
+                    `https://santafetaguktukan.online/api/sales/branch`
                 );
                 const data = await response.json();
                 console.log(data);
@@ -71,7 +71,7 @@ const Dashboard = () => {
         const fetchAdmin = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/api/admin/${id}`
+                    `https://santafetaguktukan.online/api/admin/${id}`
                 );
                 const data = await response.json();
                 setAdmin(data);
@@ -112,7 +112,7 @@ const Dashboard = () => {
         const getCustomerCount = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/api/customer/count/`
+                    `https://santafetaguktukan.online/api/customer/count/`
                 );
                 const jsonData = await response.json();
                 setCustomerCount(jsonData.count);
@@ -126,7 +126,7 @@ const Dashboard = () => {
             try {
                 if (role === "ADM") {
                     const response = await fetch(
-                        `http://localhost:7722/api/order/count/${admin.branchid}`
+                        `https://santafetaguktukan.online/api/order/count/${admin.branchid}`
                     );
 
                     const jsonData = await response.json();
@@ -135,7 +135,7 @@ const Dashboard = () => {
                 }
                 if (role === "STF") {
                     const response = await fetch(
-                        `http://localhost:7722/api/order/all/count/`
+                        `https://santafetaguktukan.online/api/order/all/count/`
                     );
 
                     const jsonData = await response.json();
@@ -151,7 +151,7 @@ const Dashboard = () => {
         const getProductCount = async () => {
             try {
                 const response = await fetch(
-                    "http://localhost:7722/api/product/count"
+                    "https://santafetaguktukan.online/api/product/count"
                 );
 
                 const jsonData = await response.json();
@@ -167,14 +167,14 @@ const Dashboard = () => {
             try {
                 if (role === "ADM") {
                     const response = await fetch(
-                        `http://localhost:7722/api/order/success/${admin.branchid}`
+                        `https://santafetaguktukan.online/api/order/success/${admin.branchid}`
                     );
                     const jsonData = await response.json();
                     setSaleCount(jsonData.sum);
                 }
                 if (role === "STF") {
                     const response = await fetch(
-                        `http://localhost:7722/api/order/all/success/`
+                        `https://santafetaguktukan.online/api/order/all/success/`
                     );
                     const jsonData = await response.json();
                     setSaleCount(jsonData.sum);
@@ -187,7 +187,7 @@ const Dashboard = () => {
         const fetchMonthlyProfit = async (month) => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/api/transaction_sum/${month}`
+                    `https://santafetaguktukan.online/api/transaction_sum/${month}`
                 );
 
                 if (!response.ok) {

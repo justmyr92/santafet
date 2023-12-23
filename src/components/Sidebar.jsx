@@ -74,7 +74,7 @@ const Sidebar = () => {
         const fetchAdmin = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/api/admin/${id}`
+                    `https://santafetaguktukan.online/api/admin/${id}`
                 );
                 const data = await response.json();
                 setAdmin(data);
@@ -86,7 +86,7 @@ const Sidebar = () => {
         const getOrderCount = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/api/order/count/notcompleted/${id}`
+                    `https://santafetaguktukan.online/api/order/count/notcompleted/${id}`
                 );
                 const data = await response.json();
                 setOrderCount(data.count);

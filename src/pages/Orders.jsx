@@ -28,7 +28,7 @@ const Orders = () => {
         const fetchData = async () => {
             try {
                 const adminResponse = await fetch(
-                    `http://localhost:7722/api/admin/${id}`
+                    `https://santafetaguktukan.online/api/admin/${id}`
                 );
                 const adminData = await adminResponse.json();
                 setAdmin(adminData);
@@ -37,7 +37,7 @@ const Orders = () => {
 
                 if (adminBranchId) {
                     const ordersResponse = await fetch(
-                        `http://localhost:7722/api/orders/${adminBranchId}`,
+                        `https://santafetaguktukan.online/api/orders/${adminBranchId}`,
                         {
                             method: "GET",
                             headers: {

@@ -14,7 +14,7 @@ const AddressBooks = () => {
         const getAddress = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/api/address/${ID}`
+                    `https://santafetaguktukan.online/api/address/${ID}`
                 );
                 const jsonData = await response.json();
                 setAddress(jsonData);
@@ -50,7 +50,7 @@ const AddressBooks = () => {
         console.log(editedAddress, "ID");
         try {
             const response = await fetch(
-                `http://localhost:7722/api/address/update`,
+                `https://santafetaguktukan.online/api/address/update`,
                 {
                     method: "PATCH",
                     headers: {

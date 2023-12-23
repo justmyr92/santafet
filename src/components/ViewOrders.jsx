@@ -13,7 +13,7 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
         const getOrderList = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/api/order/item/${selectedOrder.customerorderid}`,
+                    `https://santafetaguktukan.online/api/order/item/${selectedOrder.customerorderid}`,
                     {
                         method: "GET",
                         headers: {
@@ -32,7 +32,7 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
         const getAddress = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/api/address/${selectedOrder.customerid}`,
+                    `https://santafetaguktukan.online/api/address/${selectedOrder.customerid}`,
                     {
                         method: "GET",
                         headers: {
@@ -51,7 +51,7 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
         const getCustomer = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/api/customer/${selectedOrder.customerid}`,
+                    `https://santafetaguktukan.online/api/customer/${selectedOrder.customerid}`,
                     {
                         method: "GET",
                         headers: {
@@ -131,7 +131,7 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
             if (result.isConfirmed) {
                 try {
                     const response = await fetch(
-                        `http://localhost:7722/api/order/process/${selectedOrder.customerorderid}`,
+                        `https://santafetaguktukan.online/api/order/process/${selectedOrder.customerorderid}`,
                         {
                             method: "PATCH",
                             headers: {

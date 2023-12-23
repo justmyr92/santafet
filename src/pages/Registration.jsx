@@ -159,7 +159,18 @@ const Registration = () => {
                 const { lat, lon } = data[0];
                 return { lat, lng: lon };
             } else {
-                throw new Error("Failed to get coordinates for the address");
+                const response2 = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&q=${city}`
+                );
+                const data2 = await response2.json();
+                if (data2 && data2.length > 0) {
+                    const { lat, lon } = data2[0];
+                    return { lat, lng: lon };
+                } else {
+                    throw new Error(
+                        "Failed to get coordinates for the address"
+                    );
+                }
             }
         } catch (error) {
             throw error;
@@ -203,7 +214,7 @@ const Registration = () => {
             };
 
             const customerResponse = await fetch(
-                "http://localhost:7722/api/customer/register",
+                "https://santafetaguktukan.online/api/customer/register",
                 {
                     method: "POST",
                     headers: {
@@ -232,7 +243,7 @@ const Registration = () => {
             };
 
             const addressResponse = await fetch(
-                "http://localhost:7722/api/address/add",
+                "https://santafetaguktukan.online/api/address/add",
                 {
                     method: "POST",
                     headers: {

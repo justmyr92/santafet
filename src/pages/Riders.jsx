@@ -66,24 +66,30 @@ const Riders = () => {
 
     useEffect(() => {
         const getRiders = async () => {
-            const response = await fetch("http://localhost:7722/api/rider", {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
+            const response = await fetch(
+                "https://santafetaguktukan.online/api/rider",
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
             const data = await response.json();
             setRiders(data);
         };
         getRiders();
         setReload(false);
         const getBranch = async () => {
-            const response = await fetch("http://localhost:7722/api/branch", {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
+            const response = await fetch(
+                "https://santafetaguktukan.online/api/branch",
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
             const data = await response.json();
             setBranch(data);
         };

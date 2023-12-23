@@ -30,7 +30,9 @@ const Branch = () => {
 
     useEffect(() => {
         const branchFetch = async () => {
-            const response = await fetch(`http://localhost:7722/api/branch`);
+            const response = await fetch(
+                `https://santafetaguktukan.online/api/branch`
+            );
             const data = await response.json();
             setBranch(data);
         };
@@ -121,7 +123,7 @@ const Branch = () => {
             if (result.isConfirmed) {
                 try {
                     const response = await fetch(
-                        `http://localhost:7722/api/branch/update`,
+                        `https://santafetaguktukan.online/api/branch/update`,
                         {
                             method: "PATCH",
                             headers: {
@@ -182,13 +184,16 @@ const Branch = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch("http://localhost:7722/api/branch", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(newBranch),
-            });
+            const response = await fetch(
+                "https://santafetaguktukan.online/api/branch",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(newBranch),
+                }
+            );
             const data = await response.json();
             console.log("New branch added:", data);
             setBranch([...branch, data]); // Update the branch list with the new branch

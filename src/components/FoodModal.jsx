@@ -89,7 +89,7 @@ const FoodModal = ({
 
             if (confirmed.isConfirmed) {
                 const response = await fetch(
-                    "http://localhost:7722/api/cart/add",
+                    "https://santafetaguktukan.online/api/cart/add",
                     {
                         method: "POST",
                         headers: {
@@ -132,7 +132,7 @@ const FoodModal = ({
         const getFoodPrices = async () => {
             try {
                 const response = await fetch(
-                    `http://localhost:7722/api/food/price`,
+                    `https://santafetaguktukan.online/api/food/price`,
                     {
                         method: "GET",
                         headers: {

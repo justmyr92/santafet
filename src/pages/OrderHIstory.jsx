@@ -46,7 +46,7 @@ const OrderHIstory = () => {
     useEffect(() => {
         const fetchAddress = async () => {
             const response = await fetch(
-                `http://localhost:7722/api/address/${localStorage.getItem(
+                `https://santafetaguktukan.online/api/address/${localStorage.getItem(
                     "userID"
                 )}`
             );
@@ -55,7 +55,7 @@ const OrderHIstory = () => {
         };
         const fetchOrders = async () => {
             const response = await fetch(
-                `http://localhost:7722/api/order/${localStorage.getItem(
+                `https://santafetaguktukan.online/api/order/${localStorage.getItem(
                     "userID"
                 )}`
             );
@@ -70,7 +70,7 @@ const OrderHIstory = () => {
         const fetchOrderItems = async (orderID) => {
             if (selectedOrder !== null) {
                 const response = await fetch(
-                    `http://localhost:7722/api/order/item/${orderID}`
+                    `https://santafetaguktukan.online/api/order/item/${orderID}`
                 );
                 const data = await response.json();
                 setOrderItems(data);

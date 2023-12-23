@@ -42,7 +42,7 @@ const ForgotPassword = () => {
         e.preventDefault();
 
         const response = await fetch(
-            "http://localhost:7722/api/customer/email",
+            "https://santafetaguktukan.online/api/customer/email",
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -158,7 +158,7 @@ const ForgotPassword = () => {
 
             const body = { email, password };
             const response = await fetch(
-                "http://localhost:7722/api/customer/forgotpassword",
+                "https://santafetaguktukan.online/api/customer/forgotpassword",
                 {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
