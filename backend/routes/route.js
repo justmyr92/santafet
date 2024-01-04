@@ -302,19 +302,6 @@ router.patch("/order/process/:id", async (req, res) => {
         console.log(req.body);
         let query = "";
         let values = [];
-        // if (deliveryTime !== "" && status === "Out for delivery") {
-        //     query =
-        //         "UPDATE customerOrderTable SET customerOrderStatus = $1, estimated_delivery_time = $2 WHERE customerOrderID = $3";
-        //     values = [status, deliveryTime, id];
-        // } else if (status === "Completed" && deliveryTime === "") {
-        //     query =
-        //         "UPDATE customerOrderTable SET customerOrderStatus = $1, customerOrderPaymentStatus = $2 WHERE customerOrderID = $3";
-        //     values = [status, "Paid", id];
-        // } else {
-        //     query =
-        //         "UPDATE customerOrderTable SET customerOrderStatus = $1 WHERE customerOrderID = $2";
-        //     values = [status, id];
-        // }
 
         if (status === "Completed" && deliverytime === "") {
             query =

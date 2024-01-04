@@ -171,6 +171,8 @@ const Menu = () => {
                         await responseFavoriteFoods.json();
                     console.log(dataFavoriteFoods, "test2");
                     setFavoriteFoods(dataFavoriteFoods);
+                } else {
+                    setSelectedAddress({});
                 }
 
                 const responseBestSeller = await fetch(
@@ -993,7 +995,7 @@ const Menu = () => {
                                     {selectedAddress &&
                                     localStorage.getItem("userID") !== null ? (
                                         <>
-                                            <p className="text-sm font-medium text-gray-900">
+                                            <p className="text-sm font-medium text-red-500">
                                                 {
                                                     selectedAddress.customerfullname
                                                 }
@@ -1017,10 +1019,15 @@ const Menu = () => {
                                                     selectedAddress.customercontactnumber
                                                 }
                                             </p>
+                                            <hr className="my-1" />
+                                            <p className="text-sm text-gray-500">
+                                                {selectedAddress.customernotes}
+                                            </p>
                                         </>
                                     ) : (
                                         <p className="text-sm text-gray-500">
-                                            No address selected
+                                            No address selected, please login to
+                                            add an address
                                         </p>
                                     )}
                                 </div>
