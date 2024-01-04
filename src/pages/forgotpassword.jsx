@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import emailjs from "@emailjs/browser";
 import Swal from "sweetalert2";
 import { Link } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState("");
@@ -191,32 +192,43 @@ const ForgotPassword = () => {
     };
 
     return (
-        <section className="login bg-blue-100 h-screen">
+        <section className="login bg-red-400 h-screen">
             <div className="container mx-auto px-4 relative h-full">
                 <div className="flex content-center items-center justify-center h-full">
                     <div className="w-full lg:w-4/12 px-4">
-                        <div className="relative flex flex-col min-w-0 break-words w-full mb-6 shadow-lg rounded-lg bg-blue-200 border-0">
-                            <div className="rounded-t mb-0 px-6 py-6">
-                                <div className="text-center mb-3">
-                                    <h6 className="text-blue-600 text-sm font-bold">
+                        <div
+                            className="relative flex flex-col min-w-0 break-words w-full py-10 shadow-lg rounded-lg bg-white border-0"
+                            style={{
+                                boxShadow: "3px 3px 0 #facc15",
+                            }}
+                        >
+                            <div className="rounded-t mb-0 px-6">
+                                <div className="logo flex items-center justify-center">
+                                    <img
+                                        src={logo}
+                                        alt="logo"
+                                        className="w-32 mb-4"
+                                    />
+                                </div>{" "}
+                                <div className="mb-4">
+                                    <h4 className="text-2xl font-bold mb-1 text-red-500">
                                         Forgot Password
-                                    </h6>
+                                    </h4>
                                 </div>
-                                <hr className="mt-6 border-b-1 border-blue-300" />
                             </div>
-                            <div className="flex-auto px-4 lg:px-10 py-10 pt-0">
+                            <div className="flex-auto px-6">
                                 {page === 1 && (
                                     <form onSubmit={submitEmail}>
                                         <div className="relative w-full mb-3">
                                             <label
-                                                className="block uppercase text-blue-600 text-xs font-bold mb-2"
+                                                className="block text-sm font-medium text-gray-700 mb-1"
                                                 htmlFor="grid-password"
                                             >
                                                 Email
                                             </label>
                                             <input
                                                 type="email"
-                                                className={`px-3 py-3 placeholder-blue-400 text-blue-700 bg-white rounded text-sm shadow focus:outline-none focus:shadow-outline w-full ${
+                                                className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 outline-none ${
                                                     isEmailExist === false &&
                                                     "border-2 border-red-500"
                                                 }`}
@@ -237,7 +249,7 @@ const ForgotPassword = () => {
 
                                         <div className="text-center mt-6">
                                             <button
-                                                className="bg-blue-600 text-white active:bg-blue-700 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 w-full"
+                                                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-full"
                                                 type="submit"
                                                 disabled={isButtonDisabled}
                                             >
@@ -250,14 +262,14 @@ const ForgotPassword = () => {
                                     <form onSubmit={verifyOtp}>
                                         <div className="relative w-full mb-3">
                                             <label
-                                                className="block uppercase text-blue-600 text-xs font-bold mb-2"
+                                                className="block text-sm font-medium text-gray-700 mb-1"
                                                 htmlFor="grid-password"
                                             >
                                                 OTP
                                             </label>
                                             <input
                                                 type="text"
-                                                className={`px-3 py-3 placeholder-blue-400 text-blue-700 bg-white rounded text-sm shadow focus:outline-none focus:shadow-outline w-full ${
+                                                className={`bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 outline-none ${
                                                     isVerified === false &&
                                                     "border-2 border-red-500"
                                                 }`}
@@ -289,7 +301,7 @@ const ForgotPassword = () => {
                                             )}
                                         </div>
                                         <button
-                                            className="bg-blue-600 text-white active:bg-blue-700 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 w-full"
+                                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-full"
                                             type="submit"
                                         >
                                             Verify OTP
@@ -307,7 +319,7 @@ const ForgotPassword = () => {
                                             )}
                                             <div className="relative w-full mb-3">
                                                 <label
-                                                    className="block uppercase text-blue-600 text-xs font-bold mb-2"
+                                                    className="block text-sm font-medium text-gray-700 mb-1"
                                                     htmlFor="grid-password"
                                                 >
                                                     New Password
@@ -318,7 +330,7 @@ const ForgotPassword = () => {
                                                             ? "text"
                                                             : "password"
                                                     }
-                                                    className="px-3 py-3 placeholder-blue-400 text-blue-700 bg-white rounded text-sm shadow focus:outline-none focus:shadow-outline w-full"
+                                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 outline-none"
                                                     placeholder="New Password"
                                                     style={{
                                                         transition:
@@ -334,7 +346,7 @@ const ForgotPassword = () => {
                                             </div>
                                             <div className="relative w-full mb-3">
                                                 <label
-                                                    className="block uppercase text-blue-600 text-xs font-bold mb-2"
+                                                    className="block text-sm font-medium text-gray-700 mb-1"
                                                     htmlFor="grid-password"
                                                 >
                                                     Confirm Password
@@ -345,7 +357,7 @@ const ForgotPassword = () => {
                                                             ? "text"
                                                             : "password"
                                                     }
-                                                    className="px-3 py-3 placeholder-blue-400 text-blue-700 bg-white rounded text-sm shadow focus:outline-none focus:shadow-outline w-full"
+                                                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 outline-none"
                                                     placeholder="Confirm Password"
                                                     style={{
                                                         transition:
@@ -371,14 +383,14 @@ const ForgotPassword = () => {
                                                     className="form-checkbox text-blue-600 ml-1 w-5 h-5"
                                                 />
                                                 <label
-                                                    className="text-blue-600 ml-2"
+                                                    className="block text-sm font-medium text-gray-700 ml-2"
                                                     htmlFor="grid-password"
                                                 >
                                                     Show Password
                                                 </label>
                                             </div>
                                             <button
-                                                className="bg-blue-600 text-white active:bg-blue-700 text-sm font-bold uppercase px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 w-full"
+                                                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-full"
                                                 type="submit"
                                             >
                                                 Change Password
