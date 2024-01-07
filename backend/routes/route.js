@@ -1349,4 +1349,46 @@ router.delete("/all/food", async (req, res) => {
     }
 });
 
+//delete product availability by foodmenuid
+router.delete("/availability/delete/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deleteAvailability = await pool.query(
+            "DELETE FROM productAvailabilityTable WHERE foodMenuID = $1",
+            [id]
+        );
+        res.json("Availability was deleted!");
+    } catch (err) {
+        console.error(err.message);
+    }
+});
+
+//delete food menu price by foodmenuid
+router.delete("/price/delete/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deletePrice = await pool.query(
+            "DELETE FROM foodMenuPriceTable WHERE foodMenuID = $1",
+            [id]
+        );
+        res.json("Price was deleted!");
+    } catch (err) {
+        console.error(err.message);
+    }
+});
+
+//delete food menu by foodmenuid
+router.delete("/food/delete/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deleteFood = await pool.query(
+            "DELETE FROM foodMenuTable WHERE foodMenuID = $1",
+            [id]
+        );
+        res.json("Food was deleted!");
+    } catch (err) {
+        console.error(err.message);
+    }
+});
+
 module.exports = router;

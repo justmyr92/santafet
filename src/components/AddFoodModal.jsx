@@ -1,8 +1,8 @@
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytes } from "firebase/storage";
 import { storage } from "../firebase";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { v4 } from "uuid";
 const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
     const [foodName, setFoodName] = useState("");
@@ -163,13 +163,13 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
         <div
             id="add-food-modal"
             data-modal-backdrop="static"
-            tabindex="-1"
+            tabIndex="-1"
             aria-hidden="true"
             className={`fixed transform top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl p-4 overflow-x-hidden overflow-y-auto' ${
                 showModal ? "block" : "hidden"
             }`}
         >
-            <form onSubmit={handleSubmit} enctype="multipart/form-data">
+            <form onSubmit={handleSubmit} encType="multipart/form-data">
                 <div className="relative w-full max-w-2xl max-h-full">
                     <div className="relative bg-white rounded-lg shadow">
                         <div className="flex items-start justify-between p-4 border-b rounded-t">
@@ -232,7 +232,13 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Food Category
                                 </label>
-                                <select className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none">
+                                <select
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none"
+                                    name="foodMenuCategory"
+                                    onChange={(e) =>
+                                        setFoodMenuCategory(e.target.value)
+                                    }
+                                >
                                     <option value="Chicken">Chicken</option>
                                     <option value="Pork">Pork</option>
                                 </select>
