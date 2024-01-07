@@ -119,11 +119,11 @@ const UpdateFoodModal = ({ showModal, setShowModal, foodData, setReload }) => {
                             <span className="sr-only">Close modal</span>
                         </button>
                     </div>
-                    <div className="p-6 space-y-6">
+                    <div className="p-6 h-[400px] overflow-y-auto">
                         <label htmlFor="foodMenuImage">Name</label>
                         <input
                             type="text"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none mb-3"
                             name="foodName"
                             placeholder="Food Name"
                             value={foodName}
@@ -131,7 +131,7 @@ const UpdateFoodModal = ({ showModal, setShowModal, foodData, setReload }) => {
                         />
                         <label htmlFor="foodMenuImage">Description</label>
                         <textarea
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none mb-3"
                             name="foodMenuDescription"
                             placeholder="Food Description"
                             value={foodMenuDescription}
@@ -142,7 +142,7 @@ const UpdateFoodModal = ({ showModal, setShowModal, foodData, setReload }) => {
                         <label htmlFor="foodMenuImage">Category</label>
                         <input
                             type="text"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none mb-3"
                             name="foodMenuCategory"
                             placeholder="Food Category"
                             value={foodMenuCategory}
@@ -155,7 +155,7 @@ const UpdateFoodModal = ({ showModal, setShowModal, foodData, setReload }) => {
                         <input
                             type="file"
                             name="foodMenuImage"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 focus:outline-none mb-3"
                             onChange={(e) => setNewImage(e.target.files[0])}
                         />
                         <img src={foodMenuImage} alt="food" className="w-1/4" />
