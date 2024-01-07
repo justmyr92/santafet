@@ -323,119 +323,121 @@ const Menu = () => {
             cancelButtonText: "No, cancel",
             reverseButtons: true,
         }).then(async (result) => {
-            console.log(selectedAddress, customerID);
-            if (customerID === "") {
-                alert("Please select an address");
-                return;
-            }
-            if (cart.length === 0) {
-                alert("Please add items to cart");
-                return;
-            }
-            const order = {
-                //id random int
-                customerorderid: Math.random().toString(36).substr(2, 9),
-                customerid: localStorage.getItem("userID"),
-                customeraddressid: selectedAddress.customeraddressid,
-                customerorderdate: new Date()
-                    .toISOString()
-                    .slice(0, 19)
-                    .replace("T", " "),
-                customerorderstatus: "Pending",
-                customerordertotalprice: cart.reduce(
-                    (total, item) =>
-                        parseFloat(total) +
-                        parseFloat(
-                            foodPrices.find(
-                                (price) =>
-                                    price.foodmenupriceid ===
-                                    item.foodmenupriceid
-                            ).foodmenuprice
-                        ) *
-                            item.quantity,
-                    50
-                ),
-                customerorderpaymentmethod: "Cash on Delivery",
-                customerorderpaymentstatus: "Pending",
-                deliverypersonid: selectedBranch,
-                estimated_delivery_time: "",
-                order_method: orderType,
-            };
-            console.log(order);
-            try {
-                const response = await fetch(
-                    "https://santafetaguktukan.online/api/order/add",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify(order),
-                    }
-                );
-
-                if (response.ok) {
-                    cart.forEach(async (item) => {
-                        const orderItem = {
-                            customerorderitemid: Math.random()
-                                .toString(36)
-                                .substr(2, 9),
-                            customerorderid: order.customerorderid,
-                            foodmenuid: item.foodmenuid,
-                            foodmenupriceid: item.foodmenupriceid,
-                            customerorderitemquantity: item.quantity,
-                            customerorderitemtotalprice:
-                                item.quantity *
+            if (result.isConfirmed) {
+                console.log(selectedAddress, customerID);
+                if (customerID === "") {
+                    alert("Please select an address");
+                    return;
+                }
+                if (cart.length === 0) {
+                    alert("Please add items to cart");
+                    return;
+                }
+                const order = {
+                    //id random int
+                    customerorderid: Math.random().toString(36).substr(2, 9),
+                    customerid: localStorage.getItem("userID"),
+                    customeraddressid: selectedAddress.customeraddressid,
+                    customerorderdate: new Date()
+                        .toISOString()
+                        .slice(0, 19)
+                        .replace("T", " "),
+                    customerorderstatus: "Pending",
+                    customerordertotalprice: cart.reduce(
+                        (total, item) =>
+                            parseFloat(total) +
+                            parseFloat(
                                 foodPrices.find(
                                     (price) =>
                                         price.foodmenupriceid ===
                                         item.foodmenupriceid
-                                ).foodmenuprice,
-                        };
+                                ).foodmenuprice
+                            ) *
+                                item.quantity,
+                        50
+                    ),
+                    customerorderpaymentmethod: "Cash on Delivery",
+                    customerorderpaymentstatus: "Pending",
+                    deliverypersonid: selectedBranch,
+                    estimated_delivery_time: "",
+                    order_method: orderType,
+                };
+                console.log(order);
+                try {
+                    const response = await fetch(
+                        "https://santafetaguktukan.online/api/order/add",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify(order),
+                        }
+                    );
 
-                        console.log(orderItem);
+                    if (response.ok) {
+                        cart.forEach(async (item) => {
+                            const orderItem = {
+                                customerorderitemid: Math.random()
+                                    .toString(36)
+                                    .substr(2, 9),
+                                customerorderid: order.customerorderid,
+                                foodmenuid: item.foodmenuid,
+                                foodmenupriceid: item.foodmenupriceid,
+                                customerorderitemquantity: item.quantity,
+                                customerorderitemtotalprice:
+                                    item.quantity *
+                                    foodPrices.find(
+                                        (price) =>
+                                            price.foodmenupriceid ===
+                                            item.foodmenupriceid
+                                    ).foodmenuprice,
+                            };
+
+                            console.log(orderItem);
+                            try {
+                                const response = await fetch(
+                                    "https://santafetaguktukan.online/api/order/item/add",
+                                    {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                        },
+                                        body: JSON.stringify(orderItem),
+                                    }
+                                );
+
+                                if (response.ok) {
+                                    console.log("Order item added");
+                                } else {
+                                    console.error("Error adding order item");
+                                }
+                            } catch (error) {
+                                console.error(error);
+                            }
+                        });
+
                         try {
-                            const response = await fetch(
-                                "https://santafetaguktukan.online/api/order/item/add",
+                            const responseDeleteCart = await fetch(
+                                "https://santafetaguktukan.online/api/customer/cart/delete/" +
+                                    customerID,
                                 {
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                    },
-                                    body: JSON.stringify(orderItem),
+                                    method: "DELETE",
                                 }
                             );
 
-                            if (response.ok) {
-                                console.log("Order item added");
-                            } else {
-                                console.error("Error adding order item");
+                            if (responseDeleteCart.ok) {
+                                console.log("Cart deleted");
+
+                                window.location.href = "/orderhistory";
                             }
                         } catch (error) {
                             console.error(error);
                         }
-                    });
-
-                    try {
-                        const responseDeleteCart = await fetch(
-                            "https://santafetaguktukan.online/api/customer/cart/delete/" +
-                                customerID,
-                            {
-                                method: "DELETE",
-                            }
-                        );
-
-                        if (responseDeleteCart.ok) {
-                            console.log("Cart deleted");
-
-                            window.location.href = "/orderhistory";
-                        }
-                    } catch (error) {
-                        console.error(error);
                     }
+                } catch (error) {
+                    console.error(error);
                 }
-            } catch (error) {
-                console.error(error);
             }
         });
     };
