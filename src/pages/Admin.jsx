@@ -182,26 +182,27 @@ const Users = () => {
     const columns = [
         {
             name: "ID",
-            selector: (row) => row.adminid,
+            cell: (row) => <div className="w-15">{row.adminid}</div>,
             sortable: true,
         },
         {
-            name: "First Name",
-            selector: (row) => row.adminfirstname,
-            sortable: true,
-        },
-        {
-            name: "Last Name",
-            selector: (row) => row.adminlastname,
+            name: "Name",
+            cell: (row) => (
+                <div className="w-[10rem]">
+                    {row.adminfirstname} {row.adminlastname}
+                </div>
+            ),
+            // selector: (row) => row.adminfirstname + " " + row.adminlastname,
             sortable: true,
         },
         {
             name: "Email",
-            selector: (row) => row.adminemailaddress,
+            cell: (row) => <div>{row.adminemailaddress}</div>,
             sortable: true,
         },
         {
             name: "Contact Number",
+            cell: (row) => <div className="w-15">{row.admincontactnumber}</div>,
             selector: (row) => row.admincontactnumber,
             sortable: true,
         },
@@ -217,7 +218,7 @@ const Users = () => {
             name: "Status",
             cell: (row) => (
                 <div
-                    className={`${
+                    className={`w-15 border ${
                         row.is_active === "active"
                             ? "bg-green-500"
                             : "bg-red-500"
@@ -231,7 +232,7 @@ const Users = () => {
         {
             name: "Actions",
             cell: (row) => (
-                <div className="flex">
+                <div className="flex w-15 justify-center border">
                     <button
                         className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm p-2 text-center"
                         type="button"
@@ -396,7 +397,7 @@ const Users = () => {
                                     />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-1 gap-2">
                                 <div className="mb-4">
                                     <label
                                         htmlFor="adminemailaddress"

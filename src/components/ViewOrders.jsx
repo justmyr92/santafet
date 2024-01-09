@@ -183,7 +183,7 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
     return (
         <div
             id="default-modal"
-            tabindex="-1"
+            tabIndex="-1"
             aria-hidden="true"
             className="z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full fixed inset-0 flex items-center justify-center"
         >
@@ -208,8 +208,8 @@ const ViewOrders = ({ setShowOrderDetailsModal, selectedOrder, setReload }) => {
                             >
                                 <path
                                     stroke="currentColor"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
                                     stroke-width="2"
                                     d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
                                 />

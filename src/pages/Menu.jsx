@@ -1,12 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import FoodModal from "../components/FoodModal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-    faEdit,
-    faLocationDot,
-    faSquarePlus,
-    faTrash,
-} from "@fortawesome/free-solid-svg-icons";
+import { faLocationDot, faTrash } from "@fortawesome/free-solid-svg-icons";
 import AddressModal from "../components/AddressModal";
 import { storage } from "../firebase";
 import { getDownloadURL, ref } from "firebase/storage";
@@ -453,7 +448,7 @@ const Menu = () => {
             );
         }
         console.log(selectedAvailable);
-    }, [selectedFood, available]);
+    }, [selectedFood, available, selectedAvailable]);
 
     return (
         <>

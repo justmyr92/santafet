@@ -202,7 +202,7 @@ const Available = ({ showModal, setShowModal, foodMenuID, setReload }) => {
     return (
         <div
             id="default-modal"
-            tabindex="-1"
+            tabIndex="-1"
             aria-hidden="true"
             class="overflow-y-auto overflow-x-hidden z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full fixed inset-0 flex"
         >
@@ -227,8 +227,8 @@ const Available = ({ showModal, setShowModal, foodMenuID, setReload }) => {
                             >
                                 <path
                                     stroke="currentColor"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
                                     stroke-width="2"
                                     d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
                                 />
