@@ -26,7 +26,7 @@ const UpdateFoodModal = ({ showModal, setShowModal, foodData, setReload }) => {
         const getFoodPrice = async () => {
             try {
                 const response = await fetch(
-                    `https://santafetaguktukan.online/api/food/price/${foodData.foodmenuid}`
+                    `http://localhost:7722/api/food/price/${foodData.foodmenuid}`
                 );
                 const jsonData = await response.json();
 
@@ -65,7 +65,7 @@ const UpdateFoodModal = ({ showModal, setShowModal, foodData, setReload }) => {
             };
         }
         const response = await fetch(
-            `https://santafetaguktukan.online/api/food/update/${foodMenuID}`,
+            `http://localhost:7722/api/food/update/${foodMenuID}`,
             {
                 method: "PATCH",
                 headers: {

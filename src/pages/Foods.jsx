@@ -40,7 +40,7 @@ const Foods = () => {
     const [isReloading, setIsReloading] = useState(false);
 
     const fetchData = async () => {
-        let apiUrl = "https://santafetaguktukan.online/api/food";
+        let apiUrl = "http://localhost:7722/api/food";
 
         if (search !== "") {
             apiUrl += `/search/${search}`;

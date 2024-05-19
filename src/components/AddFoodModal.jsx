@@ -41,7 +41,7 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
         const getBranchID = async () => {
             try {
                 const response = await fetch(
-                    "https://santafetaguktukan.online/api/branch/ids"
+                    "http://localhost:7722/api/branch/ids"
                 );
                 const jsonData = await response.json();
                 setBranchID(jsonData);
@@ -75,7 +75,7 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
         try {
             const setFood = async () => {
                 const response = await fetch(
-                    "https://santafetaguktukan.online/api/food/add",
+                    "http://localhost:7722/api/food/add",
                     {
                         method: "POST",
                         headers: {
@@ -107,7 +107,7 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
                             console.log("Price data", priceData);
 
                             const priceResponse = await fetch(
-                                "https://santafetaguktukan.online/api/food/price/add",
+                                "http://localhost:7722/api/food/price/add",
                                 {
                                     method: "POST",
                                     headers: {
@@ -134,7 +134,7 @@ const AddFoodModal = ({ showModal, setShowModal, setReload }) => {
                         };
 
                         const availabilityResponse = await fetch(
-                            "https://santafetaguktukan.online/api/availability/add",
+                            "http://localhost:7722/api/availability/add",
                             {
                                 method: "POST",
                                 headers: {

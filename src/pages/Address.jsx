@@ -66,7 +66,7 @@ const Address = ({}) => {
 
         if (confirmed.isConfirmed) {
             const response = await fetch(
-                "https://santafetaguktukan.online/api/address/add",
+                "http://localhost:7722/api/address/add",
                 {
                     method: "POST",
                     headers: {

@@ -26,16 +26,13 @@ const AddRiderModal = ({ showModal, setShowModal, setReload }) => {
         e.preventDefault();
         console.log(rider);
 
-        const response = await fetch(
-            "https://santafetaguktukan.online/api/rider/add",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(rider),
-            }
-        );
+        const response = await fetch("http://localhost:7722/api/rider/add", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(rider),
+        });
         const data = await response.json();
         console.log(data);
         setReload(true);
@@ -44,9 +41,7 @@ const AddRiderModal = ({ showModal, setShowModal, setReload }) => {
 
     useEffect(() => {
         const getBranches = async () => {
-            const response = await fetch(
-                "https://santafetaguktukan.online/api/branch"
-            );
+            const response = await fetch("http://localhost:7722/api/branch");
             const data = await response.json();
             setBranches(data);
         };

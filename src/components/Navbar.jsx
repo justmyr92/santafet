@@ -19,7 +19,7 @@ const Navbar = () => {
         if (customerID !== null) {
             const getCustomer = async () => {
                 const response = await fetch(
-                    `https://santafetaguktukan.online/api/customer/${customerID}`
+                    `http://localhost:7722/api/customer/${customerID}`
                 );
 
                 if (response.ok) {
